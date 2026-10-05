@@ -1,5 +1,13 @@
 # MinifyJS
 
+
+
+ 
+ <p align="center">
+  <img src="https://raw.githubusercontent.com/aldanedev-create/Flaxon-Backend-Framework/main/assets/flaxon.png" alt="flaxon Logo"
+   width="200"/>
+</p>
+
 A native JavaScript minifier and optimizer, driven from Python or the
 command line. No Node.js, no npm, no JavaScript runtime — the engine
 is a single self-contained binary.
