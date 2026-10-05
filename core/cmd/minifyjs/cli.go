@@ -435,7 +435,7 @@ func runBundle(cfg config.Config, stderr io.Writer) int {
 		AbsWorkingDir: mustGetwd(),
 		Options: api.Options{
 			MinifyWhitespace:  cfg.Minify.Whitespace,
-			MinifyIdentifiers: false,
+			MinifyIdentifiers: cfg.Minify.Identifiers,
 			MinifySyntax:      cfg.Minify.Syntax,
 			Target:            cfg.Target,
 			Format:            cfg.Format,
