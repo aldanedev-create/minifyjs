@@ -86,6 +86,8 @@ def _is_host_platform(wheel_tag: str) -> bool:
     machine = platform.machine().lower()
     if system == "linux" and machine in ("x86_64", "amd64"):
         return wheel_tag == "manylinux2014_x86_64"
+    if system == "linux" and machine in ("aarch64", "arm64"):
+        return wheel_tag == "manylinux2014_aarch64"
     if system == "darwin":
         if machine == "arm64":
             return wheel_tag == "macosx_11_0_arm64"
@@ -107,14 +109,16 @@ def step_build_wheels(version: str) -> None:
 
 def step_verify_wheels() -> None:
     print("==> step 6: verify wheels (host only)")
-    for wheel in sorted(WHEELHOUSE.glob("*.whl")):
-        if "manylinux2014_x86_64" in wheel.name and _is_host_platform("manylinux2014_x86_64"):
-            print(f"    {wheel.name}")
-            # A real verification would install into a temp venv and
-            # run `minifyjs --version`. That is handled by the CI
-            # workflow `build-wheels.yml`; here we just print.
-        else:
-            print(f"    {wheel.name} (skipped: not host platform)")
+    wheels = sorted(WHEELHOUSE.glob("*.whl"))
+    host_wheels = [w for w in wheels if any(
+        _is_host_platform(tag) and tag in w.name
+        for tag in ("manylinux2014_x86_64", "manylinux2014_aarch64",
+                    "macosx_10_13_x86_64", "macosx_11_0_arm64", "win_amd64")
+    )]
+    if not host_wheels:
+        raise RuntimeError("No wheel available for this host; cannot verify release")
+    for wheel in host_wheels:
+        run([sys.executable, str(BUILD_DIR / "scripts" / "verify_wheel.py"), str(wheel)])
 
 
 def step_checksums(version: str) -> None:
