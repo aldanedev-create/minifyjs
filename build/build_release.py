@@ -50,6 +50,21 @@ def step_go_tests() -> None:
     run(["go", "test", "./..."], cwd=REPO_ROOT / "core")
 
 
+def step_build_test_binary(version: str) -> None:
+    """Refresh the source package binary before tests exercise new CLI flags."""
+    import json
+    platforms = json.loads((BUILD_DIR / "platforms.json").read_text())["platforms"]
+    host = next((p for p in platforms if _is_host_platform(p["wheel_tag"])), None)
+    if host is None:
+        raise RuntimeError("Unsupported host platform for Python release tests")
+    print("==> build current host binary for Python tests")
+    run([
+        sys.executable, str(BUILD_DIR / "build_core.py"),
+        "--platform", host["wheel_tag"], "--version", version,
+        "--out", str(REPO_ROOT / "python" / "minifyjs" / "bin"),
+    ])
+
+
 def step_python_tests() -> None:
     print("==> step 2: python tests")
     run([sys.executable, "-m", "pytest", "tests"], cwd=REPO_ROOT / "python")
@@ -155,6 +170,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if not args.skip_tests:
         step_go_tests()
+        step_build_test_binary(args.version)
         step_python_tests()
 
     step_cross_compile(args.version)
