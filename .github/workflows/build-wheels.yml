@@ -93,3 +93,35 @@ jobs:
           python -m pip install pytest
           python -m pytest tests
 
+  musllinux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+            tag: musllinux_1_2_x86_64
+          - runner: ubuntu-22.04-arm
+            tag: musllinux_1_2_aarch64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.2'
+          cache-dependency-path: core/go.sum
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build static musllinux wheel
+        shell: bash
+        run: |
+          VERSION=$(python -c 'import runpy; print(runpy.run_path("python/minifyjs/_version.py")["__version__"])')
+          python build/build_core.py --platform '${{ matrix.tag }}' --version "$VERSION" --out 'build/dist/${{ matrix.tag }}'
+          python build/build_wheels.py --platform '${{ matrix.tag }}' --version "$VERSION" --out build/wheelhouse
+      - name: Install and verify inside musl Linux
+        shell: bash
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo python:3.12-alpine3.22 sh -ec '
+            python -c "import runpy; m=runpy.run_path(\"build/build_release.py\"); assert m[\"_is_host_platform\"](\"${{ matrix.tag }}\"); assert not m[\"_is_host_platform\"](\"manylinux2014_x86_64\"); assert not m[\"_is_host_platform\"](\"manylinux2014_aarch64\")"
+            python build/scripts/verify_wheel.py build/wheelhouse/*-${{ matrix.tag }}.whl
+          '

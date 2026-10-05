@@ -27,6 +27,7 @@ itself; every step delegates to a script in this directory.
 from __future__ import annotations
 
 import argparse
+from functools import lru_cache
 import shutil
 import subprocess
 import sys
@@ -95,21 +96,19 @@ def step_verify_binaries() -> None:
                 print(f"    {binary} (skipped: not host platform)")
 
 
+@lru_cache(maxsize=1)
+def _compatible_host_tags() -> frozenset:
+    """Use pip's actual interpreter compatibility tags, including Linux libc."""
+    result = subprocess.run(
+        [sys.executable, "-m", "pip", "debug", "--verbose"],
+        capture_output=True, text=True, check=True,
+    )
+    return frozenset(line.strip()[len("py3-none-"):] for line in result.stdout.splitlines()
+                     if line.strip().startswith("py3-none-"))
+
+
 def _is_host_platform(wheel_tag: str) -> bool:
-    import platform
-    system = platform.system().lower()
-    machine = platform.machine().lower()
-    if system == "linux" and machine in ("x86_64", "amd64"):
-        return wheel_tag == "manylinux2014_x86_64"
-    if system == "linux" and machine in ("aarch64", "arm64"):
-        return wheel_tag == "manylinux2014_aarch64"
-    if system == "darwin":
-        if machine == "arm64":
-            return wheel_tag == "macosx_11_0_arm64"
-        return wheel_tag == "macosx_10_13_x86_64"
-    if system == "windows":
-        return wheel_tag == "win_amd64"
-    return False
+    return wheel_tag in _compatible_host_tags()
 
 
 def step_build_wheels(version: str) -> None:
@@ -125,10 +124,11 @@ def step_build_wheels(version: str) -> None:
 def step_verify_wheels() -> None:
     print("==> step 6: verify wheels (host only)")
     wheels = sorted(WHEELHOUSE.glob("*.whl"))
+    import json
+    platforms = json.loads((BUILD_DIR / "platforms.json").read_text())["platforms"]
     host_wheels = [w for w in wheels if any(
-        _is_host_platform(tag) and tag in w.name
-        for tag in ("manylinux2014_x86_64", "manylinux2014_aarch64",
-                    "macosx_10_13_x86_64", "macosx_11_0_arm64", "win_amd64")
+        _is_host_platform(p["wheel_tag"]) and w.name.endswith("-" + p["wheel_tag"] + ".whl")
+        for p in platforms
     )]
     if not host_wheels:
         raise RuntimeError("No wheel available for this host; cannot verify release")
