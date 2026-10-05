@@ -29,15 +29,16 @@ step does and how to verify it.
 ## The pipeline
 
 ```
-1. Go tests                    go test ./... in core/
-2. Python tests                pytest in python/
+1. Go tests                    vet, test, and race test in core/
+2. Python tests                pytest, mypy, and ruff in python/
 3. Cross-compile               build_core.py --all
-4. Verify binaries             verify_binary.py on each host binary
-5. Build wheels                build_wheels.py --all
-6. Verify wheels               install into a temp venv, run
+4. Build wheels                build_wheels.py --all
+5. Verify artifacts            verify_artifacts.py
+6. Verify host wheel           install into a fresh venv and run
 7. Generate checksums          generate_checksums.py
 8. Generate manifest           generate_manifest.py
-9. (Optional) Publish          twine upload
+9. Verify checksums and wheels verify_checksums.py and twine check
+10. (Optional) Publish         twine upload
 ```
 
 Step 9 runs only if `--publish` is passed. Without it, artifacts
@@ -92,6 +93,10 @@ Verifies:
 - The current branch is `main`.
 
 Fix any problem it reports before continuing.
+
+For a local rehearsal with uncommitted changes, use
+`--skip-git`. A real release must still be made from a clean `main`
+worktree.
 
 ### 4. Commit the version bump and changelog
 

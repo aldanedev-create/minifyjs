@@ -2,11 +2,16 @@ package minify_test
 
 import (
 	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/minifyjs/minifyjs/core/integration/helpers"
 )
+
+func readFile(path string) ([]byte, error) {
+	return os.ReadFile(path)
+}
 
 func TestSourcemapInlineDecodes(t *testing.T) {
 	r := helpers.Run(t, helpers.RunOptions{

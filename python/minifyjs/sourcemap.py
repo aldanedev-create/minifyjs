@@ -28,7 +28,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Union
 
 PathLike = Union[str, Path]
 
@@ -50,20 +50,20 @@ class SourceMap:
     version: int = 3
     file: str = ""
     source_root: str = ""
-    sources: List[str] = field(default_factory=list)
-    sources_content: List[Optional[str]] = field(default_factory=list)
-    names: List[str] = field(default_factory=list)
+    sources: list[str] = field(default_factory=list)
+    sources_content: list[str | None] = field(default_factory=list)
+    names: list[str] = field(default_factory=list)
     mappings: str = ""
 
     #: The original parsed JSON, with every field the loader saw.
-    raw: Dict = field(default_factory=dict)
+    raw: dict[str, Any] = field(default_factory=dict)
 
     # ------------------------------------------------------------------
     # Construction
     # ------------------------------------------------------------------
 
     @classmethod
-    def parse(cls, text: str) -> "SourceMap":
+    def parse(cls, text: str) -> SourceMap:
         """Parse a source map from a JSON string."""
         data = json.loads(text)
         if not isinstance(data, dict):
@@ -71,13 +71,13 @@ class SourceMap:
         return cls._from_dict(data)
 
     @classmethod
-    def load(cls, path: PathLike) -> "SourceMap":
+    def load(cls, path: PathLike) -> SourceMap:
         """Load a source map from a file on disk."""
         text = Path(path).read_text(encoding="utf-8")
         return cls.parse(text)
 
     @classmethod
-    def _from_dict(cls, data: Dict) -> "SourceMap":
+    def _from_dict(cls, data: dict[str, Any]) -> SourceMap:
         return cls(
             version=int(data.get("version", 3)),
             file=data.get("file", ""),
@@ -93,7 +93,7 @@ class SourceMap:
     # Serialization
     # ------------------------------------------------------------------
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable dict for this map.
 
         Unknown fields seen at parse time are preserved.
@@ -112,7 +112,7 @@ class SourceMap:
         out["mappings"] = self.mappings
         return out
 
-    def to_json(self, indent: Optional[int] = None) -> str:
+    def to_json(self, indent: int | None = None) -> str:
         """Serialize back to JSON. ``indent=None`` produces compact output."""
         return json.dumps(self.to_dict(), indent=indent, ensure_ascii=False)
 
@@ -154,7 +154,7 @@ class SourceMap:
     # Mapping decoding
     # ------------------------------------------------------------------
 
-    def decode(self) -> List[List[Tuple[int, int, int, int, int]]]:
+    def decode(self) -> list[list[tuple[int, int, int, int, int]]]:
         """Decode the ``mappings`` field into per-line segment lists.
 
         Each segment is a 5-tuple of integers:
@@ -175,12 +175,12 @@ class SourceMap:
 _B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
 # Reverse lookup for decoding.
-_B64_INDEX: Dict[str, int] = {c: i for i, c in enumerate(_B64)}
+_B64_INDEX: dict[str, int] = {c: i for i, c in enumerate(_B64)}
 
 
-def _decode_vlq(s: str) -> List[int]:
+def _decode_vlq(s: str) -> list[int]:
     """Decode a base64 VLQ string into a list of signed integers."""
-    values: List[int] = []
+    values: list[int] = []
     shift = 0
     value = 0
     for ch in s:
@@ -205,9 +205,9 @@ def _decode_vlq(s: str) -> List[int]:
     return values
 
 
-def _encode_vlq(values: List[int]) -> str:
+def _encode_vlq(values: list[int]) -> str:
     """Encode a list of signed integers into base64 VLQ."""
-    out: List[str] = []
+    out: list[str] = []
     for v in values:
         # Move the sign to the low bit.
         vlq = (-v << 1) | 1 if v < 0 else v << 1
@@ -229,7 +229,7 @@ def _encode_vlq(values: List[int]) -> str:
 
 def decode_mappings(
     mappings: str,
-) -> List[List[Tuple[int, int, int, int, int]]]:
+) -> list[list[tuple[int, int, int, int, int]]]:
     """Decode the V3 ``mappings`` field into per-line segment lists.
 
     Returns a list whose length equals the number of generated lines.
@@ -243,7 +243,7 @@ def decode_mappings(
     if not mappings:
         return []
 
-    lines: List[List[Tuple[int, int, int, int, int]]] = []
+    lines: list[list[tuple[int, int, int, int, int]]] = []
 
     # Running state across the whole mappings string.
     src_idx = 0
@@ -252,7 +252,7 @@ def decode_mappings(
     name_idx = 0
 
     for line_str in mappings.split(";"):
-        line_segments: List[Tuple[int, int, int, int, int]] = []
+        line_segments: list[tuple[int, int, int, int, int]] = []
         gen_col = 0
 
         for segment_str in line_str.split(","):
@@ -290,7 +290,7 @@ def decode_mappings(
 
 
 def encode_mappings(
-    lines: List[List[Tuple[int, int, int, int, int]]],
+    lines: list[list[tuple[int, int, int, int, int]]],
 ) -> str:
     """Encode per-line segment lists into a V3 ``mappings`` string.
 
@@ -302,11 +302,11 @@ def encode_mappings(
     src_col = 0
     name_idx = 0
 
-    out_lines: List[str] = []
+    out_lines: list[str] = []
 
     for line_segments in lines:
         gen_col = 0
-        out_segments: List[str] = []
+        out_segments: list[str] = []
         for seg in line_segments:
             gen_col_delta = seg[0] - gen_col
             gen_col = seg[0]
@@ -355,7 +355,7 @@ def encode_mappings(
 # ---------------------------------------------------------------------------
 
 
-def extract_inline_map(js_source: str) -> Optional[str]:
+def extract_inline_map(js_source: str) -> str | None:
     """If ``js_source`` ends with an inline source map, return it as
     a decoded JSON string. Otherwise return None.
 
@@ -367,7 +367,6 @@ def extract_inline_map(js_source: str) -> Optional[str]:
     returns the JSON text. It does not parse the JSON.
     """
     import base64
-    import re
 
     marker = "sourceMappingURL=data:application/json"
     idx = js_source.rfind(marker)

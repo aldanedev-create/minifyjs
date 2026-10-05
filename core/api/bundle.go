@@ -26,16 +26,19 @@ func Bundle(opts BundleOptions) (Result, error) {
 		Platform:      opts.Platform,
 		Bundle:        opts.Bundle,
 		Splitting:     opts.Splitting,
+		Format:        opts.Format,
 		Options: engine.Options{
 			MinifyWhitespace:  opts.MinifyWhitespace,
 			MinifyIdentifiers: opts.MinifyIdentifiers,
 			MinifySyntax:      opts.MinifySyntax,
 			Target:            opts.Target,
-			Format:            opts.Format,
 			Sourcemap:         opts.Sourcemap,
 			Banner:            opts.Banner,
 			Footer:            opts.Footer,
 			LegalComments:     opts.LegalComments,
+			Define:            opts.Define,
+			Drop:              opts.Drop,
+			Pure:              opts.Pure,
 		},
 	})
 	if err != nil {

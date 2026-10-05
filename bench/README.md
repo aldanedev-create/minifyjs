@@ -66,11 +66,17 @@ libraries; the directory is in `.gitignore` for that reason.
 
 ## Results
 
-`run_all.py` writes two files:
+`run_all.py` writes:
 
 - `results/latest.md` — a human-readable summary, checked in.
-- `results/history/<timestamp>.json` — a machine-readable record,
-  not checked in, used to detect regressions over time.
+
+Put the packaged binary on `PATH` so startup and memory measurements
+include MinifyJS:
+
+```console
+export PATH="$(pwd)/../python/minifyjs/bin:$PATH"
+python run_all.py
+```
 
 The checked-in `latest.md` is what goes into the README. It is
 regenerated on every release, not on every commit.

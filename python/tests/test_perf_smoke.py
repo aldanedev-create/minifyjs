@@ -15,7 +15,6 @@ from minifyjs import minify, optimize
 
 from .conftest import BINARY_PATH
 
-
 pytestmark = pytest.mark.binary
 
 

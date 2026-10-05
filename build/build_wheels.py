@@ -57,6 +57,7 @@ def wheel_filename(version: str, wheel_tag: str) -> str:
 
 
 def wheel_metadata(version: str) -> str:
+    readme = (REPO_ROOT / "python" / "README.md").read_text(encoding="utf-8")
     return (
         f"Metadata-Version: 2.1\n"
         f"Name: {DIST_NAME}\n"
@@ -64,6 +65,8 @@ def wheel_metadata(version: str) -> str:
         f"Summary: A native JavaScript minifier and optimizer. No Node.js required.\n"
         f"License: MIT\n"
         f"Requires-Python: >=3.8\n"
+        f"Description-Content-Type: text/markdown\n"
+        f"\n{readme}"
     )
 
 
@@ -142,7 +145,14 @@ def build_wheel(
     out_dir.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(wheel_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for arcname, data in entries:
-            zf.writestr(arcname, data)
+            if arcname.startswith("minifyjs/bin/"):
+                info = zipfile.ZipInfo(arcname)
+                info.create_system = 3
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.external_attr = 0o100755 << 16
+                zf.writestr(info, data)
+            else:
+                zf.writestr(arcname, data)
         zf.writestr(record_arcname, record_bytes)
 
     return wheel_path

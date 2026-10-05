@@ -35,7 +35,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Iterable, List, Optional, Union
+from typing import Iterable, Union
 
 from .minifier import minify
 from .options import Options
@@ -65,7 +65,7 @@ class Adapter:
     #: Default options passed to minify() unless overridden.
     default_options: Options
 
-    def __init__(self, options: Optional[Options] = None) -> None:
+    def __init__(self, options: Options | None = None) -> None:
         self.default_options = options or Options(compress=True, mangle=True)
 
     # ------------------------------------------------------------------
@@ -82,9 +82,7 @@ class Adapter:
             return False
         # Skip files that already end with the output suffix.
         stem = path.stem
-        if stem.endswith(self.output_suffix):
-            return False
-        return True
+        return not stem.endswith(self.output_suffix)
 
     def output_name(self, path: Path) -> Path:
         """Return the output path for a given input path.
@@ -101,8 +99,8 @@ class Adapter:
     def minify_file(
         self,
         path: PathLike,
-        output: Optional[PathLike] = None,
-        options: Optional[Options] = None,
+        output: PathLike | None = None,
+        options: Options | None = None,
     ) -> Result:
         """Minify a single file and write the result.
 
@@ -132,9 +130,9 @@ class Adapter:
     def minify_directory(
         self,
         directory: PathLike,
-        options: Optional[Options] = None,
+        options: Options | None = None,
         recursive: bool = True,
-    ) -> List[Result]:
+    ) -> list[Result]:
         """Minify every processable file under ``directory``.
 
         Returns the list of Results, in the order files were visited.

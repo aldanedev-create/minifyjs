@@ -9,7 +9,6 @@ import pytest
 
 from .conftest import BINARY_PATH
 
-
 pytestmark = pytest.mark.binary
 
 
@@ -22,8 +21,7 @@ def _require_binary():
 def test_module_version():
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs", "--version"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.returncode == 0
@@ -34,8 +32,7 @@ def test_module_version():
 def test_module_help():
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs", "--help"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.returncode == 0
@@ -46,8 +43,7 @@ def test_module_stdin_to_stdout():
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs"],
         input=b"function add(a, b) { return a + b; }\n",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.returncode == 0
@@ -57,8 +53,7 @@ def test_module_stdin_to_stdout():
 def test_module_unknown_flag():
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs", "--nope"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.returncode == 2
@@ -71,8 +66,7 @@ def test_module_no_args_empty_stdin():
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs"],
         input=b"",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.returncode == 0
@@ -83,8 +77,7 @@ def test_module_with_compress_flag():
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs", "--compress"],
         input=b"const x = 1 + 2 + 3;",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.returncode == 0
@@ -95,8 +88,7 @@ def test_module_with_target_es5():
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs", "--target", "es5"],
         input=b"const f = (a) => a;",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.returncode == 0
@@ -107,8 +99,7 @@ def test_module_output_to_stdout_exact():
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs"],
         input=b"const x = 1;",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.stdout == b"const x=1;"
@@ -118,8 +109,7 @@ def test_module_error_to_stderr():
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs"],
         input=b"function () { } }",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.returncode != 0
@@ -131,8 +121,7 @@ def test_module_exit_code_on_syntax_error():
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs"],
         input=b"function () { } }",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.returncode == 1
@@ -141,8 +130,7 @@ def test_module_exit_code_on_syntax_error():
 def test_module_exit_code_on_unknown_flag():
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs", "--not-a-flag"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.returncode == 2
@@ -152,8 +140,7 @@ def test_module_quiet_suppresses_stderr():
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs", "--quiet"],
         input=b"const x = 1;",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.returncode == 0

@@ -128,7 +128,7 @@ func TestDefineSubstitution(t *testing.T) {
 }
 
 // TestDropConsole verifies --drop console.
-func TestDropConsole(t *testing.T) {
+func TestFlagsDropConsole(t *testing.T) {
 	r := helpers.Run(t, helpers.RunOptions{
 		Args:  []string{"--drop", "console", "--compress"},
 		Stdin: []byte("console.log('hi'); const x = 1;"),
@@ -138,7 +138,7 @@ func TestDropConsole(t *testing.T) {
 }
 
 // TestDropDebugger verifies --drop debugger.
-func TestDropDebugger(t *testing.T) {
+func TestFlagsDropDebugger(t *testing.T) {
 	r := helpers.Run(t, helpers.RunOptions{
 		Args:  []string{"--drop", "debugger", "--compress"},
 		Stdin: []byte("debugger; const x = 1;"),
@@ -255,7 +255,7 @@ func TestFooterFlagIsPreserved(t *testing.T) {
 }
 
 // TestLegalCommentsNone verifies --legal-comments none.
-func TestLegalCommentsNone(t *testing.T) {
+func TestFlagsLegalCommentsNone(t *testing.T) {
 	r := helpers.Run(t, helpers.RunOptions{
 		Args:  []string{"--legal-comments", "none"},
 		Stdin: []byte("/*! preserve me */\nconst x = 1;"),
@@ -265,7 +265,7 @@ func TestLegalCommentsNone(t *testing.T) {
 }
 
 // TestLegalCommentsEOF verifies default behavior keeps /*! comments.
-func TestLegalCommentsEOF(t *testing.T) {
+func TestFlagsLegalCommentsEOF(t *testing.T) {
 	r := helpers.Run(t, helpers.RunOptions{
 		Args:  []string{"--legal-comments", "eof"},
 		Stdin: []byte("/*! preserve me */\nconst x = 1;"),

@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
-import os
-import stat
-
 import pytest
 
 from minifyjs import Adapter, Options
 
 from .conftest import BINARY_PATH
-
 
 pytestmark = pytest.mark.binary
 

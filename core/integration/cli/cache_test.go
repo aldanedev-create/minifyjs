@@ -35,11 +35,10 @@ func TestCacheSecondRunUsesCache(t *testing.T) {
 	})
 	helpers.AssertExitCode(t, r1, 0)
 
-	entries, err := os.ReadDir(cachedir)
-	if err != nil {
+	if _, err := os.ReadDir(cachedir); err != nil {
 		t.Fatal(err)
 	}
-	count1 := countFiles(entries)
+	count1 := countFiles(cachedir)
 
 	// Second run reads it and writes the same output.
 	r2 := helpers.Run(t, helpers.RunOptions{
@@ -47,8 +46,7 @@ func TestCacheSecondRunUsesCache(t *testing.T) {
 	})
 	helpers.AssertExitCode(t, r2, 0)
 
-	entries2, _ := os.ReadDir(cachedir)
-	count2 := countFiles(entries2)
+	count2 := countFiles(cachedir)
 
 	if count1 != count2 {
 		t.Fatalf("cache entry count changed: %d -> %d", count1, count2)
@@ -89,9 +87,8 @@ func TestCacheDifferentContentDiffKey(t *testing.T) {
 	})
 	helpers.AssertExitCode(t, r2, 0)
 
-	entries, _ := os.ReadDir(cachedir)
-	if countFiles(entries) < 2 {
-		t.Fatalf("expected 2 cache entries, got %d", countFiles(entries))
+	if countFiles(cachedir) < 2 {
+		t.Fatalf("expected 2 cache entries, got %d", countFiles(cachedir))
 	}
 }
 
@@ -151,14 +148,17 @@ func TestCacheCorruptEntryRecovers(t *testing.T) {
 	helpers.AssertExitCode(t, r2, 0)
 }
 
-func countFiles(entries []os.DirEntry) int {
+func countFiles(root string) int {
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return 0
+	}
 	n := 0
 	for _, e := range entries {
 		if !e.IsDir() {
 			n++
 		} else {
-			sub, _ := os.ReadDir(e.Name())
-			n += countFiles(sub)
+			n += countFiles(filepath.Join(root, e.Name()))
 		}
 	}
 	return n

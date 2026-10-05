@@ -8,7 +8,6 @@ versa.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -27,25 +26,25 @@ class Options:
 
     #: ECMAScript target for output ("es2015", "esnext", "es2020,chrome90").
     #: Empty means no lowering.
-    target: Optional[str] = None
+    target: str | None = None
 
     #: Module format ("iife", "cjs", "esm"). Empty means "preserve".
-    format: Optional[str] = None
+    format: str | None = None
 
     #: Source map mode ("inline", "external", "both"). Empty means none.
-    sourcemap: Optional[str] = None
+    sourcemap: str | None = None
 
     #: Text prepended to the output. Useful for license headers.
-    banner: Optional[str] = None
+    banner: str | None = None
 
     #: Text appended to the output.
-    footer: Optional[str] = None
+    footer: str | None = None
 
     #: Legal comments mode ("none", "inline", "eof", "external").
-    legal_comments: Optional[str] = None
+    legal_comments: str | None = None
 
     #: Source file name shown in diagnostics. Empty means "<stdin>".
-    source_name: Optional[str] = None
+    source_name: str | None = None
 
 
 @dataclass
@@ -56,16 +55,16 @@ class BundleOptions(Options):
     """
 
     #: Entry point files to bundle. At least one is required.
-    entry_points: Optional[list] = None
+    entry_points: list[str] | None = None
 
     #: Output directory. Either outdir or outfile must be set.
-    outdir: Optional[str] = None
+    outdir: str | None = None
 
     #: Output file. Cannot be set together with outdir.
-    outfile: Optional[str] = None
+    outfile: str | None = None
 
     #: Directory all relative paths are resolved against.
-    working_dir: Optional[str] = None
+    working_dir: str | None = None
 
     #: Target platform ("browser", "node", "neutral").
     platform: str = "browser"

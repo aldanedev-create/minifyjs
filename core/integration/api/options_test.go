@@ -82,7 +82,7 @@ func TestAPIOptionsFormatESM(t *testing.T) {
 }
 
 func TestAPIOptionsFormatCJS(t *testing.T) {
-	r, err := api.Minify("const x = 1;", api.Options{
+	_, err := api.Minify("const x = 1;", api.Options{
 		Format: "cjs",
 	})
 	if err != nil {

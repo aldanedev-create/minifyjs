@@ -8,8 +8,6 @@ optimize() is that plus syntax rewriting and identifier renaming.
 
 from __future__ import annotations
 
-from typing import Optional
-
 from .minifier import minify
 from .result import Result
 
@@ -17,13 +15,13 @@ from .result import Result
 def optimize(
     source: str,
     *,
-    target: Optional[str] = None,
-    format: Optional[str] = None,
-    sourcemap: Optional[str] = None,
-    banner: Optional[str] = None,
-    footer: Optional[str] = None,
-    legal_comments: Optional[str] = None,
-    source_name: Optional[str] = None,
+    target: str | None = None,
+    format: str | None = None,
+    sourcemap: str | None = None,
+    banner: str | None = None,
+    footer: str | None = None,
+    legal_comments: str | None = None,
+    source_name: str | None = None,
 ) -> Result:
     """Minify, mangle, and rewrite syntax for the given target.
 

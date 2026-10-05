@@ -8,7 +8,6 @@ from minifyjs import Adapter, minify
 
 from .conftest import BINARY_PATH
 
-
 pytestmark = pytest.mark.binary
 
 

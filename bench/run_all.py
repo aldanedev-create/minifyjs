@@ -8,11 +8,8 @@ Skips any tool that is not installed. Always runs MinifyJS.
 
 from __future__ import annotations
 
-import io
-import shutil
 import subprocess
 import sys
-from contextlib import redirect_stdout
 from datetime import datetime, timezone
 from pathlib import Path
 import os
@@ -29,13 +26,13 @@ RESULTS = HERE / "results"
 
 
 def capture(script: str, *args: str) -> str:
-    buf = io.StringIO()
-    with redirect_stdout(buf):
-        subprocess.run(
-            [sys.executable, str(HERE / script), *args],
-            check=False,
-        )
-    return buf.getvalue()
+    proc = subprocess.run(
+        [sys.executable, str(HERE / script), *args],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return proc.stdout
 
 
 def main() -> int:

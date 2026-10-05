@@ -8,7 +8,6 @@ from minifyjs import BundleError, Result, bundle
 
 from .conftest import BINARY_PATH
 
-
 pytestmark = pytest.mark.binary
 
 

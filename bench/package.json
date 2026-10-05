@@ -1,6 +1,6 @@
 {
   "name": "minifyjs-bench",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Benchmark comparison tools for MinifyJS. This package.json exists only to install the JavaScript-based minifiers (esbuild, terser, uglify-js) into bench/node_modules/ so the benchmark suite can find them without requiring a global npm install.",
   "license": "MIT",

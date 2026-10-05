@@ -47,7 +47,7 @@ func TestBannerEmptyStringAllowed(t *testing.T) {
 	helpers.AssertExitCode(t, r, 0)
 }
 
-func TestLegalCommentsNone(t *testing.T) {
+func TestBannerFooterLegalCommentsNone(t *testing.T) {
 	r := helpers.Run(t, helpers.RunOptions{
 		Args:  []string{"--legal-comments", "none"},
 		Stdin: []byte("/*! important */\nconst x = 1;"),
@@ -65,7 +65,7 @@ func TestLegalCommentsInline(t *testing.T) {
 	helpers.AssertContains(t, string(r.Stdout), "important")
 }
 
-func TestLegalCommentsEOF(t *testing.T) {
+func TestBannerFooterLegalCommentsEOF(t *testing.T) {
 	r := helpers.Run(t, helpers.RunOptions{
 		Args:  []string{"--legal-comments", "eof"},
 		Stdin: []byte("const x = 1;\n/*! tail comment */"),

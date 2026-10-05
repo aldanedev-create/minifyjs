@@ -2,6 +2,10 @@ package engine
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/evanw/esbuild/pkg/api"
 )
@@ -45,6 +49,9 @@ type BuildOptions struct {
 	// Format == "esm" and Bundle == true.
 	Splitting bool
 
+	// Format controls the module wrapper for the build.
+	Format string
+
 	// Options carries the same minify/target/format/sourcemap
 	// settings as a single-file transform.
 	Options
@@ -67,10 +74,14 @@ func Build(opts BuildOptions) (Result, error) {
 	if opts.OutDir != "" && opts.OutFile != "" {
 		return Result{}, fmt.Errorf("engine: Build cannot set both OutDir and OutFile")
 	}
-	if err := opts.Options.validate(); err != nil {
+	options := opts.Options
+	if opts.Format != "" {
+		options.Format = opts.Format
+	}
+	if err := options.validate(); err != nil {
 		return Result{}, err
 	}
-	if opts.Splitting && (opts.Format != "esm" || !opts.Bundle) {
+	if opts.Splitting && (options.Format != "esm" || !opts.Bundle) {
 		return Result{}, fmt.Errorf("engine: Splitting requires Format=\"esm\" and Bundle=true")
 	}
 
@@ -81,22 +92,50 @@ func Build(opts BuildOptions) (Result, error) {
 		AbsWorkingDir: opts.AbsWorkingDir,
 		Bundle:        opts.Bundle,
 		Splitting:     opts.Splitting,
+		Write:         true,
+		Charset:       api.CharsetUTF8,
 
 		MinifyWhitespace:  opts.MinifyWhitespace,
 		MinifyIdentifiers: opts.MinifyIdentifiers,
 		MinifySyntax:      opts.MinifySyntax,
+		Define:            opts.Define,
+		Pure:              opts.Pure,
 
 		LogLevel: api.LogLevelSilent, // we surface diagnostics ourselves
 	}
+	if options.Format == "esm" {
+		bOpts.Packages = api.PackagesExternal
+	}
+	if hasReExport(opts.EntryPoints) {
+		bOpts.TreeShaking = api.TreeShakingFalse
+	}
+	if !opts.Splitting {
+		bOpts.External = dynamicImportPaths(opts.EntryPoints)
+	}
+	for _, kind := range opts.Drop {
+		switch kind {
+		case "console":
+			bOpts.Drop |= api.DropConsole
+		case "debugger":
+			bOpts.Drop |= api.DropDebugger
+		}
+	}
 
 	if opts.Platform != "" {
-		bOpts.Platform = api.Platform(opts.Platform)
+		switch opts.Platform {
+		case "browser":
+			bOpts.Platform = api.PlatformBrowser
+		case "node":
+			bOpts.Platform = api.PlatformNode
+		case "neutral":
+			bOpts.Platform = api.PlatformNeutral
+		}
 	}
 	if opts.Target != "" {
-		bOpts.Target = api.Target(opts.Target)
+		bOpts.Target = mapTarget(opts.Target)
 	}
-	if opts.Format != "" {
-		bOpts.Format = mapFormat(opts.Format)
+	if options.Format != "" {
+		bOpts.Format = api.Format(mapFormat(options.Format))
 	}
 	if opts.Sourcemap != "" {
 		bOpts.Sourcemap = mapSourcemap(opts.Sourcemap)
@@ -126,4 +165,55 @@ func Build(opts BuildOptions) (Result, error) {
 		}
 	}
 	return out, nil
+}
+
+func dynamicImportPaths(entries []string) []string {
+	pattern := regexp.MustCompile(`\bimport\s*\(\s*["']([^"']+)["']\s*\)`)
+	seen := make(map[string]bool)
+	var paths []string
+	for _, entry := range entries {
+		data, err := os.ReadFile(entry)
+		if err != nil {
+			continue
+		}
+		for _, match := range pattern.FindAllStringSubmatch(string(data), -1) {
+			if strings.HasPrefix(match[1], ".") {
+				target := filepath.Clean(filepath.Join(filepath.Dir(entry), match[1]))
+				if _, err := os.Stat(target); err != nil {
+					continue
+				}
+			}
+			if !seen[match[1]] {
+				seen[match[1]] = true
+				paths = append(paths, match[1])
+			}
+		}
+	}
+	return paths
+}
+
+func hasReExport(entries []string) bool {
+	pattern := regexp.MustCompile(`\bexport\s+(?:\*|\{[^}]+\})\s+from\s*["']`)
+	seen := make(map[string]bool)
+	for _, entry := range entries {
+		root := filepath.Dir(entry)
+		_ = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+			if err != nil || info.IsDir() || seen[path] {
+				return nil
+			}
+			seen[path] = true
+			if filepath.Ext(path) != ".js" {
+				return nil
+			}
+			data, readErr := os.ReadFile(path)
+			if readErr == nil && pattern.Match(data) {
+				seen["__found__"] = true
+			}
+			return nil
+		})
+		if seen["__found__"] {
+			return true
+		}
+	}
+	return false
 }

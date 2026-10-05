@@ -27,9 +27,11 @@ type Config struct {
 
 	// Output path. Empty means write to stdout.
 	Output string
+	OutputDir bool
 
 	// Minify controls the three esbuild minification passes.
 	Minify MinifyOptions
+	MinifySet bool
 
 	// Target is the ECMAScript version for output. Empty means
 	// esnext (no lowering).
@@ -52,6 +54,9 @@ type Config struct {
 	// LegalComments controls what happens to /*! ... */ comments.
 	// Valid values: "", "none", "inline", "eof", "external".
 	LegalComments string
+	Define        map[string]string
+	Drop          []string
+	Pure          []string
 
 	// Bundle enables module resolution and bundling. Requires
 	// BundleOptions.EntryPoints or a single entry in Inputs.

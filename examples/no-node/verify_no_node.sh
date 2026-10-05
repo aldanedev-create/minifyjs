@@ -14,13 +14,22 @@
 set -eu
 cd "$(dirname "$0")"
 
+WC_BIN=$(command -v wc)
+
 # Strip any PATH entry that contains node, npm, or npx.
 CLEAN_PATH=""
 OLD_IFS="$IFS"
 IFS=":"
+NODE_DIR=""
+NPM_DIR=""
+if command -v node >/dev/null 2>&1; then NODE_DIR=$(dirname "$(command -v node)"); fi
+if command -v npm >/dev/null 2>&1; then NPM_DIR=$(dirname "$(command -v npm)"); fi
 for entry in $PATH; do
+    if [ -x "$entry/node" ] || [ -x "$entry/npm" ] || [ -x "$entry/npx" ]; then
+        continue
+    fi
     case "$entry" in
-        *node*|*npm*|*npx*) continue ;;
+        *node*|*npm*|*npx*|"$NODE_DIR"|"$NPM_DIR") continue ;;
     esac
     if [ -z "$CLEAN_PATH" ]; then
         CLEAN_PATH="$entry"
@@ -53,12 +62,12 @@ minifyjs app.js -o /tmp/no-node-output.js
 
 echo
 echo "== 4. checking output"
-size=$(wc -c < /tmp/no-node-output.js)
+size=$($WC_BIN -c < /tmp/no-node-output.js)
 if [ "$size" -eq 0 ]; then
     echo "   FAIL: output is empty"
     exit 1
 fi
-if grep -q $'\n' /tmp/no-node-output.js; then
+if [ "$($WC_BIN -l < /tmp/no-node-output.js)" -ne 0 ]; then
     echo "   FAIL: output contains newlines"
     exit 1
 fi

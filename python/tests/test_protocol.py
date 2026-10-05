@@ -7,7 +7,7 @@ from minifyjs.options import BundleOptions, Options
 
 
 def test_build_args_default_is_empty():
-    assert build_args(Options()) == []
+    assert build_args(Options()) == ["--no-minify", "--no-mangle"]
 
 
 def test_build_args_compress():

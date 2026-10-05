@@ -14,13 +14,13 @@ import pytest
 
 from minifyjs.sourcemap import (
     SourceMap,
+    _decode_vlq,
+    _encode_vlq,
     decode_mappings,
     encode_mappings,
     extract_inline_map,
     strip_inline_map,
 )
-from minifyjs.sourcemap import _decode_vlq, _encode_vlq
-
 
 # ---------------------------------------------------------------------------
 # VLQ codec

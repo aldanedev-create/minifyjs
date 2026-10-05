@@ -27,7 +27,9 @@ The public surface is:
 from ._version import __version__
 from .adapter import Adapter
 from .bundler import bundle
-from .config import Config, find as find_config, load as load_config
+from .config import Config
+from .config import find as find_config
+from .config import load as load_config
 from .diagnostics import Diagnostic
 from .errors import BinaryNotFoundError, BundleError, MinifyError, MinifyJSError
 from .minifier import minify
@@ -36,20 +38,20 @@ from .options import BundleOptions, Options
 from .result import Result
 
 __all__ = [
-    "__version__",
-    "minify",
-    "optimize",
-    "bundle",
-    "Options",
-    "BundleOptions",
-    "Result",
-    "Diagnostic",
     "Adapter",
+    "BinaryNotFoundError",
+    "BundleError",
+    "BundleOptions",
     "Config",
+    "Diagnostic",
+    "MinifyError",
+    "MinifyJSError",
+    "Options",
+    "Result",
+    "__version__",
+    "bundle",
     "find_config",
     "load_config",
-    "MinifyJSError",
-    "MinifyError",
-    "BundleError",
-    "BinaryNotFoundError",
+    "minify",
+    "optimize",
 ]

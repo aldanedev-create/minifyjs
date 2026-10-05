@@ -12,6 +12,16 @@ import time
 from typing import Optional, Tuple
 
 from minifyjs import optimize
+from minifyjs._binary import find_binary
+
+
+def is_available() -> bool:
+    """Return whether the bundled native binary is available."""
+    try:
+        find_binary()
+    except Exception:
+        return False
+    return True
 
 
 def run(source: str, *, compress: bool = True, mangle: bool = True) -> str:

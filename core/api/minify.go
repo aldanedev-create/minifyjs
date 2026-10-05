@@ -17,6 +17,9 @@ func Minify(source string, opts Options) (Result, error) {
 		Footer:            opts.Footer,
 		LegalComments:     opts.LegalComments,
 		SourceName:        opts.SourceName,
+		Define:            opts.Define,
+		Drop:              opts.Drop,
+		Pure:              opts.Pure,
 	})
 	if err != nil {
 		return Result{}, err

@@ -62,10 +62,21 @@ Adding a new platform means:
 ## Running the pipeline locally
 
 ```console
-cd build
-python build_core.py --platform linux-x86_64 --out /tmp/minifyjs
-python scripts/verify_binary.py /tmp/minifyjs
+python build/build_core.py --all --out build/dist --version 0.1.0
+python build/build_wheels.py --all --version 0.1.0 --out build/wheelhouse
+python tools/release/verify_artifacts.py \
+    --wheelhouse build/wheelhouse --version 0.1.0
+python build/generate_checksums.py \
+    --dir build/wheelhouse --out build/wheelhouse/checksums.txt
+python build/generate_manifest.py \
+    --dir build/wheelhouse --out build/wheelhouse/manifest.json \
+    --version 0.1.0
+python tools/release/verify_checksums.py build/wheelhouse/checksums.txt
+python -m twine check build/wheelhouse/*.whl
 ```
+
+The Linux wheels target manylinux/glibc. Alpine and other musl
+systems need a source build or a musllinux platform artifact.
 
 The full release pipeline runs only in CI. It is triggered by pushing
 a tag of the form `v1.2.3`.

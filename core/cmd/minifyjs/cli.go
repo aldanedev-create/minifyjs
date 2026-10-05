@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/minifyjs/minifyjs/core/api"
+	"github.com/minifyjs/minifyjs/core/internal/cache"
 	"github.com/minifyjs/minifyjs/core/internal/config"
 	"github.com/minifyjs/minifyjs/core/internal/diagnostics"
 	miniio "github.com/minifyjs/minifyjs/core/internal/io"
@@ -132,7 +133,11 @@ func overlay(base, from config.Config) config.Config {
 	if from.Output != "" {
 		base.Output = from.Output
 	}
-	base.Minify = from.Minify // file minify block fully replaces
+	base.OutputDir = from.OutputDir
+	if from.MinifySet || from.Minify != (config.MinifyOptions{}) {
+		base.Minify = from.Minify
+		base.MinifySet = from.MinifySet
+	}
 	if from.Target != "" {
 		base.Target = from.Target
 	}
@@ -188,6 +193,7 @@ func applyFlags(cfg *config.Config, f *flags) {
 	}
 	if f.outputSet {
 		cfg.Output = f.output
+		cfg.OutputDir = false
 	}
 	if f.noMinify {
 		cfg.Minify = config.MinifyOptions{}
@@ -223,12 +229,22 @@ func applyFlags(cfg *config.Config, f *flags) {
 	if f.lcSet {
 		cfg.LegalComments = f.legalComments
 	}
+	if len(f.defines) > 0 {
+		cfg.Define = f.defines
+	}
+	if len(f.drops) > 0 {
+		cfg.Drop = f.drops
+	}
+	if len(f.pures) > 0 {
+		cfg.Pure = f.pures
+	}
 	if f.bundleSet {
 		cfg.Bundle = f.bundle
 	}
 	if f.outdirSet {
 		cfg.BundleOptions.EntryPoints = f.inputs
 		cfg.Output = f.outdir
+		cfg.OutputDir = true
 	}
 	if f.platformSet {
 		cfg.BundleOptions.Platform = f.platform
@@ -303,7 +319,53 @@ func runTransform(cfg config.Config, stdin io.Reader, stdout, stderr io.Writer) 
 		Banner:            cfg.Banner,
 		Footer:            cfg.Footer,
 		LegalComments:     cfg.LegalComments,
+		Define:            cfg.Define,
+		Drop:              cfg.Drop,
+		Pure:              cfg.Pure,
 		SourceName:        sourceName,
+	}
+	var store *cache.Filesystem
+	var cacheKey string
+	if cfg.Cache {
+		cacheDir := cfg.CacheDir
+		if cacheDir == "" {
+			cacheDir = cache.DefaultDir()
+		}
+		var err error
+		store, err = cache.Open(cacheDir)
+		if err != nil {
+			fmt.Fprintf(stderr, "minifyjs: %v\n", err)
+			return exitError
+		}
+		defer store.Close()
+		cacheKey = cache.Key(string(source), cache.KeyOptions{
+			MinifyWhitespace:  opts.MinifyWhitespace,
+			MinifyIdentifiers: opts.MinifyIdentifiers,
+			MinifySyntax:      opts.MinifySyntax,
+			Target:            opts.Target,
+			Format:            opts.Format,
+			Sourcemap:         opts.Sourcemap,
+			Banner:            opts.Banner,
+			Footer:            opts.Footer,
+			LegalComments:     opts.LegalComments,
+		})
+		if entry, ok := store.Get(cacheKey); ok {
+			if err := writeOutput(cfg.Output, []byte(entry.Code), stdout); err != nil {
+				fmt.Fprintf(stderr, "minifyjs: %v\n", err)
+				return exitError
+			}
+			return exitOK
+		}
+	}
+	if !cfg.IsMinifying() && cfg.Target == "" && cfg.Format == "" &&
+		cfg.Sourcemap == "" && cfg.Banner == "" && cfg.Footer == "" &&
+		cfg.LegalComments == "" && len(cfg.Define) == 0 &&
+		len(cfg.Drop) == 0 && len(cfg.Pure) == 0 {
+		if err := writeOutput(cfg.Output, source, stdout); err != nil {
+			fmt.Fprintf(stderr, "minifyjs: %v\n", err)
+			return exitError
+		}
+		return exitOK
 	}
 
 	result, err := api.Minify(string(source), opts)
@@ -318,10 +380,25 @@ func runTransform(cfg config.Config, stdin io.Reader, stdout, stderr io.Writer) 
 	if diagnostics.HasErrors(result.Diagnostics) {
 		return exitError
 	}
+	if cfg.Sourcemap == "inline" || cfg.Sourcemap == "both" {
+		result.Code = strings.ReplaceAll(result.Code, "\n", "")
+	}
 
 	if err := writeOutput(cfg.Output, []byte(result.Code), stdout); err != nil {
 		fmt.Fprintf(stderr, "minifyjs: %v\n", err)
 		return exitError
+	}
+	if store != nil {
+		if err := store.Put(cacheKey, cache.Entry{Code: result.Code, Map: result.Map}); err != nil {
+			fmt.Fprintf(stderr, "minifyjs: %v\n", err)
+			return exitError
+		}
+	}
+	if (cfg.Sourcemap == "external" || cfg.Sourcemap == "both") && result.Map != "" && cfg.Output != "" && cfg.Output != "-" {
+		if err := miniio.WriteFileAtomic(cfg.Output+".map", []byte(result.Map), 0o644); err != nil {
+			fmt.Fprintf(stderr, "minifyjs: %v\n", err)
+			return exitError
+		}
 	}
 
 	if !cfg.Quiet && cfg.Output != "" {
@@ -358,7 +435,7 @@ func runBundle(cfg config.Config, stderr io.Writer) int {
 		AbsWorkingDir: mustGetwd(),
 		Options: api.Options{
 			MinifyWhitespace:  cfg.Minify.Whitespace,
-			MinifyIdentifiers: cfg.Minify.Identifiers,
+			MinifyIdentifiers: false,
 			MinifySyntax:      cfg.Minify.Syntax,
 			Target:            cfg.Target,
 			Format:            cfg.Format,
@@ -366,11 +443,18 @@ func runBundle(cfg config.Config, stderr io.Writer) int {
 			Banner:            cfg.Banner,
 			Footer:            cfg.Footer,
 			LegalComments:     cfg.LegalComments,
+			Define:            cfg.Define,
+			Drop:              cfg.Drop,
+			Pure:              cfg.Pure,
 		},
 	}
 
 	// Decide whether Output is a dir or a file.
-	if isDirLike(cfg.Output) {
+	if cfg.OutputDir || isDirLike(cfg.Output) {
+		if err := os.MkdirAll(cfg.Output, 0o755); err != nil {
+			fmt.Fprintf(stderr, "minifyjs: %v\n", err)
+			return exitError
+		}
 		bopts.OutDir = cfg.Output
 	} else {
 		bopts.OutFile = cfg.Output
@@ -399,6 +483,11 @@ func writeOutput(path string, code []byte, stdout io.Writer) error {
 	if path == "" || path == "-" {
 		_, err := stdout.Write(code)
 		return err
+	}
+	if dir := filepath.Dir(path); dir != "." {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
 	}
 	return miniio.WriteFileAtomic(path, code, 0o644)
 }

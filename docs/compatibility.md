@@ -15,7 +15,8 @@ every minor version from 3.8 through 3.12 on the day of release.
 | 3.10 | Supported |
 | 3.11 | Supported |
 | 3.12 | Supported |
-| 3.13+ | Not yet tested |
+| 3.13 | Metadata and compile checked; runtime depends on the host |
+| 3.14+ | Metadata and compile checked; runtime depends on the host |
 
 ## Platforms
 

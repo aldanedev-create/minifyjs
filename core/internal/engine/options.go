@@ -74,6 +74,9 @@ type Options struct {
 	// //! ... comments. Valid values: "" (default: "eof"),
 	// "none", "inline", "eof", "external".
 	LegalComments string
+	Define        map[string]string
+	Drop          []string
+	Pure          []string
 
 	// SourceName is the file name associated with the source, used
 	// in diagnostics ("app.js:3:5: ..."). Empty means "<stdin>".
@@ -92,7 +95,11 @@ func (o Options) IsNoOp() bool {
 		o.Sourcemap == "" &&
 		o.Banner == "" &&
 		o.Footer == "" &&
-		o.LegalComments == ""
+		o.LegalComments == "" &&
+		o.SourceName == "" &&
+		len(o.Define) == 0 &&
+		len(o.Drop) == 0 &&
+		len(o.Pure) == 0
 }
 
 // validate returns an error if any field has an unrecognized value.

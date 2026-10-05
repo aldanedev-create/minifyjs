@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
 authors = [{ name = "MinifyJS contributors" }]
-keywords = ["javascript", "minifier", "optimizer", "esbuild", "cli","tree-sitter", "teloce-py","Node", "django" "flask","flaxon","fastapi"]
+keywords = ["javascript", "minifier", "optimizer", "esbuild", "cli", "tree-sitter", "teloce-py", "Node", "django", "flask", "flaxon", "fastapi"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -76,7 +76,7 @@ addopts = "-ra --strict-markers --strict-config"
 [tool.mypy]
 strict = true
 files = ["minifyjs"]
-python_version = "3.8"
+python_version = "3.14"
 warn_unused_ignores = true
 warn_redundant_casts = true
 no_implicit_reexport = true

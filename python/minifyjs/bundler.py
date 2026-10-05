@@ -8,29 +8,27 @@ directly to the CLI's --bundle / --outdir / --outfile flags.
 
 from __future__ import annotations
 
-from typing import List, Optional
-
 from ._runner import run_bundle
 from .options import BundleOptions
 from .result import Result
 
 
 def bundle(
-    entry_points: List[str],
+    entry_points: list[str],
     *,
-    outdir: Optional[str] = None,
-    outfile: Optional[str] = None,
-    working_dir: Optional[str] = None,
+    outdir: str | None = None,
+    outfile: str | None = None,
+    working_dir: str | None = None,
     platform: str = "browser",
     splitting: bool = False,
     compress: bool = True,
     mangle: bool = True,
-    target: Optional[str] = None,
-    format: Optional[str] = "esm",
-    sourcemap: Optional[str] = None,
-    banner: Optional[str] = None,
-    footer: Optional[str] = None,
-    legal_comments: Optional[str] = None,
+    target: str | None = None,
+    format: str | None = "esm",
+    sourcemap: str | None = None,
+    banner: str | None = None,
+    footer: str | None = None,
+    legal_comments: str | None = None,
 ) -> Result:
     """Bundle and minify a multi-file JavaScript project.
 

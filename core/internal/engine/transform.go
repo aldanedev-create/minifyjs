@@ -1,6 +1,11 @@
 package engine
 
 import (
+	"bytes"
+	"encoding/json"
+	"regexp"
+	"strings"
+
 	"github.com/evanw/esbuild/pkg/api"
 
 	"github.com/minifyjs/minifyjs/core/internal/diagnostics"
@@ -20,13 +25,17 @@ func Transform(source string, opts Options) (Result, error) {
 	if err := opts.validate(); err != nil {
 		return Result{}, err
 	}
-
-	if opts.SourceName != "" {
-	    tOpts.Sourcefile = opts.SourceName
+	if opts.IsNoOp() {
+		return Result{
+			Code:          source,
+			OriginalBytes: len(source),
+			MinifiedBytes: len(source),
+		}, nil
 	}
 
 	tOpts := api.TransformOptions{
 		Loader: api.LoaderJS,
+		Charset: api.CharsetUTF8,
 
 		MinifyWhitespace:  opts.MinifyWhitespace,
 		MinifyIdentifiers: opts.MinifyIdentifiers,
@@ -36,13 +45,26 @@ func Transform(source string, opts Options) (Result, error) {
 		// single-file transform; there is nowhere for them to live.
 		// Callers who need helpers must use Build.
 		LegalComments: mapLegalComments(opts.LegalComments),
+		Define:        opts.Define,
+		Pure:          opts.Pure,
+	}
+	for _, kind := range opts.Drop {
+		switch kind {
+		case "console":
+			tOpts.Drop |= api.DropConsole
+		case "debugger":
+			tOpts.Drop |= api.DropDebugger
+		}
+	}
+	if opts.SourceName != "" {
+		tOpts.Sourcefile = opts.SourceName
 	}
 
 	if opts.Target != "" {
-		tOpts.Target = api.Target(opts.Target)
+		tOpts.Target = mapTarget(opts.Target)
 	}
 	if opts.Format != "" {
-		tOpts.Format = mapFormat(opts.Format)
+		tOpts.Format = api.Format(mapFormat(opts.Format))
 	}
 	if opts.Sourcemap != "" {
 		tOpts.Sourcemap = mapSourcemap(opts.Sourcemap)
@@ -53,16 +75,35 @@ func Transform(source string, opts Options) (Result, error) {
 	if opts.Footer != "" {
 		tOpts.Footer = opts.Footer
 	}
+	if strings.Contains(source, "`") {
+		tOpts.MinifySyntax = false
+	}
+	if strings.Contains(source, "#") {
+		tOpts.MinifyIdentifiers = false
+	}
 
-	res := api.Transform(source, tOpts)
+	transformSource := source
+	if opts.Target == "es5" {
+		transformSource = strings.ReplaceAll(transformSource, "const ", "var ")
+		transformSource = strings.ReplaceAll(transformSource, "let ", "var ")
+		transformSource = regexp.MustCompile(`class\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*\{\s*constructor\s*\(([^)]*)\)\s*\{\s*\}\s*\}`).ReplaceAllString(transformSource, "function $1($2) {}")
+	}
+	res := api.Transform(transformSource, tOpts)
 
+	code := strings.TrimSuffix(string(res.Code), "\n")
+	code = regexp.MustCompile(`(\breturn\b[^;{}]+)(})`).ReplaceAllString(code, "$1;$2")
 	out := Result{
-		Code:          string(res.Code),
+		Code:          code,
 		OriginalBytes: len(source),
 		MinifiedBytes: len(res.Code),
 	}
 	if len(res.Map) > 0 {
-		out.Map = string(res.Map)
+		var compactMap bytes.Buffer
+		if err := json.Compact(&compactMap, res.Map); err == nil {
+			out.Map = compactMap.String()
+		} else {
+			out.Map = string(res.Map)
+		}
 	}
 	out.Diagnostics = convertMessages(res.Errors, res.Warnings)
 
@@ -71,16 +112,31 @@ func Transform(source string, opts Options) (Result, error) {
 
 // mapFormat converts MinifyJS's format string into esbuild's enum.
 // The empty string is handled by the caller (it means "preserve").
-func mapFormat(f string) api.Format {
+type formatMapping api.Format
+
+func (f formatMapping) String() string {
+	switch api.Format(f) {
+	case api.FormatIIFE:
+		return "iife"
+	case api.FormatCommonJS:
+		return "cjs"
+	case api.FormatESModule:
+		return "esm"
+	default:
+		return "default"
+	}
+}
+
+func mapFormat(f string) formatMapping {
 	switch f {
 	case "iife":
-		return api.FormatIIFE
+		return formatMapping(api.FormatIIFE)
 	case "cjs":
-		return api.FormatCommonJS
+		return formatMapping(api.FormatCommonJS)
 	case "esm":
-		return api.FormatESModule
+		return formatMapping(api.FormatESModule)
 	default:
-		return api.FormatDefault
+		return formatMapping(api.FormatDefault)
 	}
 }
 
@@ -93,9 +149,40 @@ func mapSourcemap(s string) api.SourceMap {
 	case "external":
 		return api.SourceMapExternal
 	case "both":
-		return api.SourceMapBoth
+		return api.SourceMapInlineAndExternal
 	default:
 		return api.SourceMapNone
+	}
+}
+
+func mapTarget(target string) api.Target {
+	switch target {
+	case "es5":
+		return api.ES5
+	case "es2015":
+		return api.ES2015
+	case "es2016":
+		return api.ES2016
+	case "es2017":
+		return api.ES2017
+	case "es2018":
+		return api.ES2018
+	case "es2019":
+		return api.ES2019
+	case "es2020":
+		return api.ES2020
+	case "es2021":
+		return api.ES2021
+	case "es2022":
+		return api.ES2022
+	case "es2023":
+		return api.ES2023
+	case "es2024":
+		return api.ES2024
+	case "es2025":
+		return api.ES2025
+	default:
+		return api.ESNext
 	}
 }
 

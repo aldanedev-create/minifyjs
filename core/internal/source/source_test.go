@@ -10,8 +10,8 @@ func TestNewStoresNameAndText(t *testing.T) {
 	if s.Text() != "let x = 1;\n" {
 		t.Fatalf("Text = %q", s.Text())
 	}
-	if s.Len() != 10 {
-		t.Fatalf("Len = %d, want 10", s.Len())
+	if s.Len() != 11 {
+		t.Fatalf("Len = %d, want 11", s.Len())
 	}
 }
 

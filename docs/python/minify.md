@@ -1,7 +1,8 @@
 # Python: `minify()`
 
-The simplest entry point. Removes whitespace and comments. Does not
-rename identifiers or fold constants.
+The simplest entry point. Removes whitespace and comments and applies
+syntax compression by default. It does not rename identifiers unless
+`mangle=True` is requested.
 
 ## Signature
 
@@ -9,7 +10,7 @@ rename identifiers or fold constants.
 def minify(
     source: str,
     *,
-    compress: bool = False,
+    compress: bool = True,
     mangle: bool = False,
     target: Optional[str] = None,
     format: Optional[str] = None,
@@ -34,7 +35,8 @@ print(result.code)
 ```
 
 With no arguments, `minify()` removes whitespace and comments and
-nothing else.
+applies safe syntax simplifications. Use `compress=False, mangle=False`
+for an exact source passthrough.
 
 ## Enabling compression
 

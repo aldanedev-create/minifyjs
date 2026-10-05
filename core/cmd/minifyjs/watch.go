@@ -66,7 +66,7 @@ func runWatch(cfg config.Config, stdout, stderr io.Writer) int {
 		if len(res.Diagnostics) > 0 {
 			renderDiagnostics(stderr, res.Diagnostics, cfg.Quiet)
 		}
-		if api.HasErrors(res) {
+		if res.HasErrors() {
 			return exitError
 		}
 		if err := writeFile(cfg.Output, []byte(res.Code)); err != nil {

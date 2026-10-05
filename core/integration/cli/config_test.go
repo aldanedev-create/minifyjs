@@ -9,6 +9,10 @@ import (
 	"github.com/minifyjs/minifyjs/core/integration/helpers"
 )
 
+func pathEnv() string {
+	return os.Getenv("PATH")
+}
+
 // ---------------------------------------------------------------------------
 // Basic discovery
 // ---------------------------------------------------------------------------

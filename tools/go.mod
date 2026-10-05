@@ -1,3 +1,3 @@
-﻿module github.com/minifyjs/minifyjs/tools
+module github.com/minifyjs/minifyjs/tools
 
 go 1.22

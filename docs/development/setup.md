@@ -31,6 +31,8 @@ cd ..
 
 # Install the Python package in editable mode.
 cd python
+python -m venv .venv
+. .venv/bin/activate
 python -m pip install -e ".[dev]"
 cd ..
 ```
@@ -43,6 +45,10 @@ core/bin/minifyjs --version
 
 python -c "from minifyjs import minify; print(minify('const x = 1;').code)"
 # const x=1;
+
+Python 3.14 is included in the package metadata and is checked by the
+release type-check and compile validation. Use a Python 3.14 interpreter
+when available to run the full runtime suite.
 ```
 
 On Windows, the binary is `core\bin\minifyjs.exe`.
@@ -77,9 +83,9 @@ From the repository root:
 
 | Command | What it does |
 |---|---|
-| `go build ./...` | Build every Go package in both modules |
-| `go test ./...` | Run every Go test |
-| `go vet ./...` | Run vet on both modules |
+| `cd core && go build ./...` | Build every core Go package |
+| `cd core && go test ./...` | Run every core Go test |
+| `cd core && go vet ./...` | Run vet on the core module |
 | `make build` | Build the CLI into `core/bin/minifyjs` |
 | `make test` | Run the full test suite (Go + Python) |
 | `make lint` | Run linters for both languages |

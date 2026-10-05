@@ -6,10 +6,8 @@ import pytest
 
 from minifyjs import MinifyError
 from minifyjs._runner import _parse_diagnostics, _parse_one
-from minifyjs.diagnostics import Diagnostic
 
 from .conftest import BINARY_PATH
-
 
 pytestmark = pytest.mark.binary
 

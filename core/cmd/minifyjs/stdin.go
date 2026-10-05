@@ -16,15 +16,6 @@ import (
 //
 // On non-Windows platforms it returns os.Stdin unchanged.
 func stdinReader() io.Reader {
-	if isWindows() {
-		// We do not switch the OS handle mode here because doing so
-		// requires calling into syscall and cannot be undone safely
-		// for the parent process. Instead, callers who need exact
-		// bytes on Windows should pass a file path rather than pipe
-		// through stdin. This function exists so that decision has a
-		// single home if we later add a syscall-based fix.
-		return os.Stdin
-	}
 	return os.Stdin
 }
 

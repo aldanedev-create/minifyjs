@@ -8,8 +8,10 @@ through one of the two functions here.
 
 from __future__ import annotations
 
+import contextlib
+import json
 import subprocess
-from typing import List
+from pathlib import Path
 
 from ._binary import find_binary
 from ._protocol import build_args, build_bundle_args
@@ -17,6 +19,7 @@ from .diagnostics import Diagnostic
 from .errors import BundleError, MinifyError
 from .options import BundleOptions, Options
 from .result import Result
+from .sourcemap import extract_inline_map, strip_inline_map
 
 _DIAG_PREFIX = "minifyjs: "
 
@@ -29,12 +32,15 @@ def run_minify(source: str, opts: Options) -> Result:
     proc = subprocess.run(
         args,
         input=source.encode("utf-8"),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
 
     diagnostics = _parse_diagnostics(proc.stderr.decode("utf-8", "replace"))
+    if opts.source_name:
+        for diagnostic in diagnostics:
+            if diagnostic.file == "<stdin>":
+                diagnostic.file = opts.source_name
 
     if proc.returncode != 0:
         raise MinifyError(
@@ -42,8 +48,16 @@ def run_minify(source: str, opts: Options) -> Result:
         )
 
     code = proc.stdout.decode("utf-8")
+    map_text = ""
+    if opts.sourcemap == "external":
+        map_text = extract_inline_map(code) or ""
+        code = strip_inline_map(code)
+        if map_text:
+            with contextlib.suppress(json.JSONDecodeError):
+                map_text = json.dumps(json.loads(map_text), separators=(",", ":"))
     return Result(
         code=code,
+        map=map_text,
         original_bytes=len(source.encode("utf-8")),
         minified_bytes=len(code.encode("utf-8")),
         diagnostics=diagnostics,
@@ -62,8 +76,7 @@ def run_bundle(opts: BundleOptions) -> Result:
 
     proc = subprocess.run(
         args,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
 
@@ -75,15 +88,21 @@ def run_bundle(opts: BundleOptions) -> Result:
         )
 
     code = proc.stdout.decode("utf-8")
+    map_text = ""
+    if opts.sourcemap in ("external", "both") and opts.outfile:
+        map_path = Path(opts.outfile + ".map")
+        if map_path.is_file():
+            map_text = map_path.read_text(encoding="utf-8")
     return Result(
         code=code,
+        map=map_text,
         original_bytes=0,
         minified_bytes=len(code.encode("utf-8")),
         diagnostics=diagnostics,
     )
 
 
-def _parse_diagnostics(stderr: str) -> List[Diagnostic]:
+def _parse_diagnostics(stderr: str) -> list[Diagnostic]:
     """Parse the CLI's stderr into Diagnostic objects.
 
     The format is one diagnostic per line:
@@ -93,7 +112,7 @@ def _parse_diagnostics(stderr: str) -> List[Diagnostic]:
 
     Lines that do not match either shape are ignored.
     """
-    out: List[Diagnostic] = []
+    out: list[Diagnostic] = []
     for line in stderr.splitlines():
         line = line.rstrip()
         if not line:
@@ -142,7 +161,7 @@ def _parse_one(body: str) -> Diagnostic | None:
     return None
 
 
-def _format_error_message(returncode: int, diags: List[Diagnostic]) -> str:
+def _format_error_message(returncode: int, diags: list[Diagnostic]) -> str:
     errs = [d for d in diags if d.is_error]
     if errs:
         return "; ".join(str(d) for d in errs)

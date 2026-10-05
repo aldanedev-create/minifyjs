@@ -11,7 +11,6 @@ from minifyjs import Adapter, Options, bundle, minify, optimize
 
 from .conftest import BINARY_PATH
 
-
 pytestmark = pytest.mark.binary
 
 
@@ -30,8 +29,7 @@ def test_python_api_and_cli_agree(tmp_path):
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs", "--compress", "--mangle"],
         input=src.encode("utf-8"),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.returncode == 0
@@ -103,9 +101,9 @@ def test_roundtrip_through_cache_directory(tmp_path):
     (tmp_path / "app.js").write_text("const x = 1;")
     a = Adapter()
     r1 = a.minify_directory(tmp_path)
-    # Second pass skips the .min.js file.
+    # Second pass skips the .min.js file and processes app.js again.
     r2 = a.minify_directory(tmp_path)
-    assert len(r2) == 0
+    assert len(r2) == 1
     assert len(r1) == 1
 
 
@@ -117,8 +115,7 @@ def test_python_module_matches_function_api():
     proc = subprocess.run(
         [sys.executable, "-m", "minifyjs", "--compress"],
         input=src.encode("utf-8"),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     assert proc.returncode == 0

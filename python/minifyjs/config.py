@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 #: Config file names, in discovery order. First match wins.
 CONFIG_FILENAMES = (
@@ -28,20 +28,20 @@ class Config:
     newer version round-trips without loss.
     """
 
-    inputs: List[str] = field(default_factory=list)
-    output: Optional[str] = None
-    target: Optional[str] = None
-    format: Optional[str] = None
-    sourcemap: Optional[str] = None
-    banner: Optional[str] = None
-    footer: Optional[str] = None
-    legal_comments: Optional[str] = None
+    inputs: list[str] = field(default_factory=list)
+    output: str | None = None
+    target: str | None = None
+    format: str | None = None
+    sourcemap: str | None = None
+    banner: str | None = None
+    footer: str | None = None
+    legal_comments: str | None = None
     compress: bool = False
     mangle: bool = False
-    extra: Dict[str, Any] = field(default_factory=dict)
+    extra: dict[str, Any] = field(default_factory=dict)
 
 
-def find(start: Union[str, Path] = ".") -> Optional[Path]:
+def find(start: str | Path = ".") -> Path | None:
     """Walk up from ``start`` looking for a config file.
 
     Returns the path of the first match, or None if none was found.
@@ -58,7 +58,7 @@ def find(start: Union[str, Path] = ".") -> Optional[Path]:
         current = parent
 
 
-def load(path: Union[str, Path]) -> Config:
+def load(path: str | Path) -> Config:
     """Load a specific config file."""
     p = Path(path)
     with p.open("r", encoding="utf-8") as f:
@@ -66,7 +66,7 @@ def load(path: Union[str, Path]) -> Config:
     return _from_dict(data)
 
 
-def load_discovered(start: Union[str, Path] = ".") -> Optional[Config]:
+def load_discovered(start: str | Path = ".") -> Config | None:
     """Load the discovered config, or return None if none is found."""
     found = find(start)
     if found is None:
@@ -74,7 +74,7 @@ def load_discovered(start: Union[str, Path] = ".") -> Optional[Config]:
     return load(found)
 
 
-def _from_dict(data: Dict[str, Any]) -> Config:
+def _from_dict(data: dict[str, Any]) -> Config:
     minify_block = data.get("minify", {}) or {}
     cfg = Config(
         inputs=list(data.get("inputs", []) or []),

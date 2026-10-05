@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List
 
 from .diagnostics import Diagnostic
 
@@ -25,7 +24,7 @@ class Result:
     minified_bytes: int = 0
 
     #: Any diagnostics produced by the engine.
-    diagnostics: List[Diagnostic] = field(default_factory=list)
+    diagnostics: list[Diagnostic] = field(default_factory=list)
 
     @property
     def ratio(self) -> float:

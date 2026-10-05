@@ -127,6 +127,7 @@ func (j jsonConfig) toConfig(baseDir string) (Config, error) {
 		c.Output = resolvePath(*j.Output, baseDir)
 	}
 	if j.Minify != nil {
+		c.MinifySet = true
 		if j.Minify.Whitespace != nil {
 			c.Minify.Whitespace = *j.Minify.Whitespace
 		}

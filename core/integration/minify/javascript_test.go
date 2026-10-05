@@ -1,7 +1,6 @@
 package minify_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/minifyjs/minifyjs/core/integration/helpers"

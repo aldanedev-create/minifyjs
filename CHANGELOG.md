@@ -41,6 +41,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Earlier prototype implementations of a hand-written lexer,
   parser, AST, and printer. esbuild now owns those stages.
 
+## [0.1.0] - 2026-10-05
+
+- Initial 0.1.0 release of the native CLI, Go API, Python package,
+  bundler, diagnostics, source maps, and cache support.
+
 ## [0.0.0] - 2026-01-01
 
 - Empty placeholder release to establish the changelog.

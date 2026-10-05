@@ -67,7 +67,7 @@ func parseFlags(args []string) (*flags, error) {
 		case "-V", "--version":
 			f.showVersion = true
 
-		case "-o", "--output":
+		case "-o", "--output", "--outfile":
 			v, err := consumeValue()
 			if err != nil {
 				return nil, err
@@ -151,6 +151,9 @@ func parseFlags(args []string) (*flags, error) {
 			v, err := consumeValue()
 			if err != nil {
 				return nil, err
+			}
+			if v != "console" && v != "debugger" {
+				return nil, fmt.Errorf("invalid --drop kind %q", v)
 			}
 			f.drops = append(f.drops, v)
 
@@ -239,6 +242,9 @@ func parseFlags(args []string) (*flags, error) {
 		default:
 			return nil, fmt.Errorf("unknown flag %s", name)
 		}
+	}
+	if f.outputSet && f.outdirSet {
+		return nil, fmt.Errorf("--outfile and --outdir cannot be used together")
 	}
 	return f, nil
 }

@@ -10,24 +10,29 @@ interface a shell user gets from `cat app.js | minifyjs`.
 
 from __future__ import annotations
 
-from typing import List
-
 from .options import BundleOptions, Options
 
 
-def build_args(opts: Options) -> List[str]:
+def build_args(opts: Options) -> list[str]:
     """Build the CLI argument list for a transform (non-bundle) call."""
-    args: List[str] = []
+    args: list[str] = []
     if opts.compress:
         args.append("--compress")
+    elif not opts.mangle:
+        args.append("--no-minify")
+    else:
+        args.append("--no-compress")
     if opts.mangle:
         args.append("--mangle")
+    else:
+        args.append("--no-mangle")
     if opts.target:
         args.extend(["--target", opts.target])
     if opts.format:
         args.extend(["--format", opts.format])
     if opts.sourcemap:
-        args.extend([f"--sourcemap={opts.sourcemap}"])
+        mode = "inline" if opts.sourcemap == "external" else opts.sourcemap
+        args.extend([f"--sourcemap={mode}"])
     if opts.banner:
         args.extend(["--banner", opts.banner])
     if opts.footer:
@@ -37,10 +42,12 @@ def build_args(opts: Options) -> List[str]:
     return args
 
 
-def build_bundle_args(opts: BundleOptions) -> List[str]:
+def build_bundle_args(opts: BundleOptions) -> list[str]:
     """Build the CLI argument list for a bundle call."""
-    args: List[str] = ["--bundle"]
+    args: list[str] = ["--bundle"]
     args.extend(build_args(opts))
+    if opts.sourcemap == "external":
+        args[args.index("--sourcemap=inline")] = "--sourcemap=external"
     if opts.outdir:
         args.extend(["--outdir", opts.outdir])
     if opts.outfile:

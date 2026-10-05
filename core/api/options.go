@@ -17,4 +17,7 @@ type Options struct {
 	Footer            string
 	LegalComments     string
 	SourceName        string
+	Define            map[string]string
+	Drop              []string
+	Pure              []string
 }

@@ -23,7 +23,7 @@ func TestTransformMinifyIdentifiersRenamesLocals(t *testing.T) {
 	}
 	// The function's own name is exported (top-level), but the
 	// parameters and locals should be renamed to something shorter.
-	if strings.Contains(res.Code, "calculateTotal") {
+	if !strings.Contains(res.Code, "calculateTotal") {
 		t.Fatalf("top-level function name should be preserved: %q", res.Code)
 	}
 	if !strings.Contains(res.Code, "function") {

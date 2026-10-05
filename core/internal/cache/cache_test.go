@@ -37,8 +37,8 @@ func TestKeyNoLengthAmbiguity(t *testing.T) {
 	// Concatenation without length prefixing would collide:
 	// ("ab", "c") vs ("a", "bc"). Field-length prefixing must
 	// prevent this.
-	if Key("abc", KeyOptions{}) == Key("abc", KeyOptions{}) {
-		t.Fatal("same input must produce same key")
+	if Key("ab", KeyOptions{Target: "c"}) == Key("a", KeyOptions{Target: "bc"}) {
+		t.Fatal("length-prefixed fields must not collide")
 	}
 }
 

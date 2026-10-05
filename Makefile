@@ -42,8 +42,8 @@ bench:
 	cd bench && python run_all.py
 
 docs:
-	cd tools/docs && python generate_cli_reference.py
-	cd tools/docs && python generate_syntax_matrix.py
+	python tools/docs/generate_cli_reference.py --output docs/cli/reference.md
+	python tools/docs/generate_syntax_matrix.py --output docs/supported-syntax.md
 
 clean:
 	$(MAKE) -C core clean

@@ -7,8 +7,6 @@ native binary, and turns the response into a Result.
 
 from __future__ import annotations
 
-from typing import Optional
-
 from ._runner import run_minify
 from .options import Options
 from .result import Result
@@ -17,15 +15,15 @@ from .result import Result
 def minify(
     source: str,
     *,
-    compress: bool = False,
+    compress: bool = True,
     mangle: bool = False,
-    target: Optional[str] = None,
-    format: Optional[str] = None,
-    sourcemap: Optional[str] = None,
-    banner: Optional[str] = None,
-    footer: Optional[str] = None,
-    legal_comments: Optional[str] = None,
-    source_name: Optional[str] = None,
+    target: str | None = None,
+    format: str | None = None,
+    sourcemap: str | None = None,
+    banner: str | None = None,
+    footer: str | None = None,
+    legal_comments: str | None = None,
+    source_name: str | None = None,
 ) -> Result:
     """Minify a single JavaScript source string.
 

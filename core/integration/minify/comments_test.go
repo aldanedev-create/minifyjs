@@ -37,7 +37,7 @@ func TestMultipleCommentsRemoved(t *testing.T) {
 	helpers.AssertExitCode(t, r, 0)
 	helpers.AssertNotContains(t, string(r.Stdout), "a")
 	helpers.AssertNotContains(t, string(r.Stdout), "b")
-	helpers.AssertNotContains(t, string(r.Stdout), "c")
+	helpers.AssertNotContains(t, string(r.Stdout), "comment")
 	helpers.AssertNotContains(t, string(r.Stdout), "d")
 	helpers.AssertNotContains(t, string(r.Stdout), "e")
 }

@@ -27,13 +27,19 @@ Output goes to `bench/results/latest.md`.
 
 ```console
 cd bench
-pip install -r requirements.txt
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install -r requirements.txt
 npm install
+export PATH="$(pwd)/../python/minifyjs/bin:$PATH"
 ```
 
 `pip install` installs `rjsmin` and `psutil`. `npm install`
 installs esbuild, terser, and uglify-js into
 `bench/node_modules/.bin/`.
+
+The PATH line makes the packaged MinifyJS binary available to the
+startup and memory measurements as well as the Python comparator.
 
 The suite skips any tool that is not installed. MinifyJS is
 required (the suite would be pointless otherwise). To compare
