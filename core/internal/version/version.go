@@ -24,7 +24,7 @@ package version
 //
 // It follows semver: MAJOR.MINOR.PATCH, optionally followed by a
 // pre-release suffix.
-var Version = "0.1.2"
+var Version = "0.1.3"
 
 // String returns the version string. It exists so callers can write
 // version.String() instead of version.Version, which gives us a

@@ -1,0 +1,72 @@
+name: Verify release wheels
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  wheel:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+            tag: manylinux2014_x86_64
+          - runner: ubuntu-22.04-arm
+            tag: manylinux2014_aarch64
+          - runner: macos-15-intel
+            tag: macosx_10_13_x86_64
+          - runner: macos-14
+            tag: macosx_11_0_arm64
+          - runner: windows-2022
+            tag: win_amd64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.2'
+          cache-dependency-path: core/go.sum
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build and verify installed wheel
+        shell: bash
+        run: |
+          VERSION=$(python -c 'import runpy; print(runpy.run_path("python/minifyjs/_version.py")["__version__"])')
+          python tools/release/check_release.py --version "$VERSION" --skip-git
+          python build/build_core.py --platform '${{ matrix.tag }}' --version "$VERSION" --out build/dist
+          python build/build_wheels.py --platform '${{ matrix.tag }}' --version "$VERSION" --out build/wheelhouse
+          python build/scripts/verify_wheel.py "build/wheelhouse/minifyjs-$VERSION-py3-none-${{ matrix.tag }}.whl"
+  teloce-browser:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: aldanedev-create/teloce-py
+          ref: a012340f98aa1061b82442c7a335eca07e642072
+          path: third_party/teloce
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.2'
+          cache-dependency-path: core/go.sum
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build and install wheel
+        shell: bash
+        run: |
+          VERSION=$(python -c 'import runpy; print(runpy.run_path("python/minifyjs/_version.py")["__version__"])')
+          python build/build_core.py --platform manylinux2014_x86_64 --version "$VERSION" --out build/dist
+          python build/build_wheels.py --platform manylinux2014_x86_64 --version "$VERSION" --out build/wheelhouse
+          python -m pip install "build/wheelhouse/minifyjs-$VERSION-py3-none-manylinux2014_x86_64.whl" ./third_party/teloce playwright==1.58.2
+          python -m playwright install --with-deps chromium
+          npm install --prefix browser-tools esbuild@0.28.2
+      - name: Check Teloce in Chromium and compare Node esbuild output
+        run: python build/scripts/teloce_browser_smoke.py third_party/teloce --esbuild browser-tools/node_modules/.bin/esbuild

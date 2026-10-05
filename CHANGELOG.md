@@ -5,6 +5,27 @@ All notable changes to MinifyJS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2026-10-05
+
+### Fixed
+- Bundle builds now honor identifier mangling and the requested working directory.
+- Reexports no longer disable tree shaking.
+
+### Added
+- Explicit bundle controls for external dependencies, packages, tree shaking,
+  entry/chunk/asset names, charset, metafiles, define, and drop.
+- Python bundle results include emitted file paths, byte counts, and metadata.
+- Release wheel verification installs into a clean environment and exercises
+  the CLI, Python API, splitting, source maps, and dependency resolution.
+- CI verifies wheels on Linux x86-64/ARM64, macOS Intel/ARM64, and Windows x86-64.
+
+### Migration
+- Dependencies are bundled by default. Use `packages="external"` or `external`
+  to preserve imports for dependencies provided by the application.
+- Dynamic imports are bundled unless explicitly externalized; use `splitting=True`
+  with ESM to emit separate chunks.
+- Tree shaking follows esbuild defaults. Set `tree_shaking=False` when required.
+
 ## [Unreleased]
 
 ### Added

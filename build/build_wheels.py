@@ -89,7 +89,8 @@ def iter_python_files() -> List[Path]:
     """Every file in python/minifyjs except bin/."""
     files: List[Path] = []
     for path in PYTHON_PKG.rglob("*"):
-        if path.is_file() and "bin" not in path.relative_to(PYTHON_PKG).parts:
+        if (path.is_file() and not {"bin", "__pycache__"}.intersection(path.relative_to(PYTHON_PKG).parts)
+                and path.suffix not in {".pyc", ".pyo"}):
             files.append(path)
     return files
 

@@ -28,21 +28,27 @@ step does and how to verify it.
 
 ## The pipeline
 
-```
-1. Go tests                    vet, test, and race test in core/
-2. Python tests                pytest, mypy, and ruff in python/
+```text
+1. Go tests                    go test ./... in core/
+2. Python tests                pytest tests in python/
 3. Cross-compile               build_core.py --all
-4. Build wheels                build_wheels.py --all
-5. Verify artifacts            verify_artifacts.py
-6. Verify host wheel           install into a fresh venv and run
-7. Generate checksums          generate_checksums.py
-8. Generate manifest           generate_manifest.py
-9. Verify checksums and wheels verify_checksums.py and twine check
-10. (Optional) Publish         twine upload
+4. Verify native host binary   verify_binary.py
+5. Build wheels                build_wheels.py --all
+6. Verify host wheel           fresh venv, CLI and Python bundle smoke tests
+7. Generate checksums/manifest
+8. Optional publication        twine upload (only with --publish)
 ```
 
-Step 9 runs only if `--publish` is passed. Without it, artifacts
-are staged in `build/wheelhouse/` for review.
+The wheel workflow also builds and installs each platform wheel on a matching
+Linux, macOS, or Windows runner. Wait for all five matrix jobs to pass before
+publishing. Cross-compiling alone does not verify that a foreign-platform binary
+runs. This CI tests modern operating systems; it does not establish compatibility
+with every older OS implied by a wheel tag.
+
+The local verification step fails when no supported host wheel is available.
+It installs without dependencies or a source checkout, verifies both CLI entry
+points, and checks bundle splitting, source maps, metadata, tree shaking,
+working-directory handling, and explicit dependency externalization.
 
 ## Step by step
 
