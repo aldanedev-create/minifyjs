@@ -53,7 +53,7 @@ result = bundle("src/main.js", outdir="dist", format="esm")
 
 MinifyJS ships a generic adapter (`minifyjs.adapter`) that any
 framework or build system can subclass. See
-[`docs/integrations/generic-python.md`](https://github.com/minifyjs/minifyjs/blob/main/docs/integrations/generic-python.md)
+[`docs/integrations/generic-python.md`](https://github.com/aldanedev-create/minifyjs/blob/main/docs/integrations/generic-python.md)
 for how to write an adapter for Django, Flask, FastAPI, or a custom
 build pipeline.
 
@@ -76,7 +76,7 @@ python -m minifyjs --version
 
 ## Documentation
 
-See the main repository's [`docs/python/`](https://github.com/minifyjs/minifyjs/tree/main/docs/python).
+See the main repository's [`docs/python/`](https://github.com/aldanedev-create/minifyjs/tree/main/docs/python).
 
 ## License
 

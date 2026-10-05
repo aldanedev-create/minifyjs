@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "minifyjs"
-version = "0.1.0"
+version = "0.1.1"
 description = "A native JavaScript minifier and optimizer. No Node.js required."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -52,12 +52,11 @@ dev = [
     "mypy>=1.8",
     "ruff>=0.4",
 ]
-
 [project.urls]
-Homepage = "https://github.com/aldanedev-create/minifyjs"
-Documentation = ""https://github.com/aldanedev-create/minifyjs/tree/main/docs"
-Repository = ""https://github.com/aldanedev-create/minifyjs"
-Issues = ""https://github.com/aldanedev-create/minifyjs"
+Homepage = "https://aldanedev-create.github.io/minifyjs-docs/"
+Documentation = "https://aldanedev-create.github.io/minifyjs-docs/"
+Repository = "https://github.com/aldanedev-create/minifyjs"
+Issues = "https://github.com/aldanedev-create/minifyjs/issues"
 
 [project.scripts]
 minifyjs = "minifyjs.cli:main"

@@ -10,7 +10,9 @@
 
 A native JavaScript minifier and optimizer, driven from Python or the
 command line. No Node.js, no npm, no JavaScript runtime — the engine
-is a single self-contained binary.
+is a single self-contained binary. Repo:https://github.com/aldanedev-create/minifyjs
+
+check doc website for more : [MinifyJs-website](https://aldanedev-create.github.io/minifyjs-docs/)
 
 ```console
 $ pip install minifyjs
