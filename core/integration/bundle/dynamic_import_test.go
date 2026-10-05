@@ -9,14 +9,14 @@ import (
 	"github.com/minifyjs/minifyjs/core/integration/helpers"
 )
 
-func TestDynamicImportPreservedWithoutSplitting(t *testing.T) {
+func TestDynamicImportExplicitlyExternalWithoutSplitting(t *testing.T) {
 	dir := helpers.TmpDir(t)
 	helpers.WriteString(t, dir, "lazy.js", "export const v = 1;\n")
 	helpers.WriteString(t, dir, "main.js", `import("./lazy.js").then(m => m.v);`+"\n")
 	out := filepath.Join(dir, "bundle.js")
 
 	r := helpers.Run(t, helpers.RunOptions{
-		Args: []string{"--bundle", "--format", "esm", "--outfile", out, filepath.Join(dir, "main.js")},
+		Args: []string{"--bundle", "--format", "esm", "--external", "./lazy.js", "--outfile", out, filepath.Join(dir, "main.js")},
 	})
 	helpers.AssertExitCode(t, r, 0)
 

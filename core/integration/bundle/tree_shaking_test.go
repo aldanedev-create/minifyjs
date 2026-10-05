@@ -36,7 +36,7 @@ func TestTreeShakingKeepsUsedExport(t *testing.T) {
 	helpers.AssertExitCode(t, r, 0)
 
 	body, _ := os.ReadFile(out)
-	if !strings.Contains(string(body), "usedFunction") {
+	if !strings.Contains(string(body), `"used"`) {
 		t.Fatalf("used export was removed:\n%s", body)
 	}
 }
@@ -128,7 +128,7 @@ func TestTreeShakingReExportChain(t *testing.T) {
 	dir := helpers.TmpDir(t)
 	helpers.WriteString(t, dir, "base.js", "export const v = 1;\n")
 	helpers.WriteString(t, dir, "mid.js", `export { v } from "./base.js";`+"\n")
-	helpers.WriteString(t, dir, "main.js", `import { v } from "./mid.js"; v;`+"\n")
+	helpers.WriteString(t, dir, "main.js", `import { v } from "./mid.js"; console.log(v);`+"\n")
 	out := filepath.Join(dir, "bundle.js")
 
 	r := helpers.Run(t, helpers.RunOptions{

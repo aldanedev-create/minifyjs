@@ -9,10 +9,10 @@
 //
 // Precedence (highest wins):
 //
-//   1. CLI flags passed to `minifyjs`
-//   2. Environment variables (MINIFYJS_*)
-//   3. A config file found via the search path
-//   4. Built-in defaults (defaults.go)
+//  1. CLI flags passed to `minifyjs`
+//  2. Environment variables (MINIFYJS_*)
+//  3. A config file found via the search path
+//  4. Built-in defaults (defaults.go)
 //
 // This matches the convention used by eslint, prettier, and similar
 // tools, so users do not have to learn a new override model.
@@ -26,11 +26,11 @@ type Config struct {
 	Inputs []string
 
 	// Output path. Empty means write to stdout.
-	Output string
+	Output    string
 	OutputDir bool
 
 	// Minify controls the three esbuild minification passes.
-	Minify MinifyOptions
+	Minify    MinifyOptions
 	MinifySet bool
 
 	// Target is the ECMAScript version for output. Empty means
@@ -96,6 +96,17 @@ type MinifyOptions struct {
 // config file's directory so a config checked into a repo works no
 // matter where the user invokes `minifyjs` from.
 type BundleOptions struct {
+	EntryNames  string
+	ChunkNames  string
+	AssetNames  string
+	Metafile    string
+	External    []string
+	Packages    string
+	TreeShaking string
+	Charset     string
+
+	WorkingDir string
+
 	EntryPoints []string
 	Platform    string // "browser" | "node" | "neutral"
 	Splitting   bool

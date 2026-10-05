@@ -290,3 +290,27 @@ special asset handling.
 
 - [optimize.md](optimize.md) — single-file optimization
 - [../cli/bundle.md](../cli/bundle.md) — the CLI equivalent
+## Production build controls
+
+Bundle calls honor `mangle=True` and use esbuild's standard tree shaking and dependency resolution. Packages and dynamic imports are bundled unless explicitly externalized.
+
+```python
+result = bundle(
+    ["src/main.js"], working_dir="/absolute/project/path", outdir="dist",
+    format="esm", splitting=True, compress=True, mangle=True,
+    target="es2020", entry_names="[name]-[hash]",
+    chunk_names="chunks/[name]-[hash]", asset_names="assets/[name]-[hash]",
+    metafile="reports/build.json", define={"DEBUG": "false"},
+    drop=["debugger"], charset="utf8",
+)
+for output in result.output_files:
+    print(output["path"], output["bytes"])
+print(result.minified_bytes)
+print(result.metafile["inputs"])
+```
+
+Additional options: `external=["dependency"]`, `packages="bundle"` (default) or `"external"`, `tree_shaking=None` (esbuild default), `True` or `False`, and `charset="utf8"` or `"ascii"`. Relative entries, outputs and metafiles resolve against `working_dir`, defaulting to the current directory. Python bundle calls ignore discovered CLI configuration files to keep API settings reproducible.
+
+`result.code` contains the JavaScript for `outfile` builds and is empty for `outdir`. `output_files` and parsed `metafile` are returned in both modes. `minified_bytes` counts all emitted files, including maps. `original_bytes` remains zero because bundles include dependencies beyond their entries.
+
+Migration: ESM no longer automatically preserves package imports; re-exports no longer disable tree shaking; dynamic imports are bundled without splitting. Use explicit `external` patterns or `packages="external"` where preservation is intended, and retest application behavior before deployment.
