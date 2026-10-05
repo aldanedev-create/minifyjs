@@ -54,10 +54,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/minifyjs/minifyjs"
-Documentation = "https://github.com/minifyjs/minifyjs/tree/main/docs"
-Repository = "https://github.com/minifyjs/minifyjs"
-Issues = "https://github.com/minifyjs/minifyjs/issues"
+Homepage = "https://github.com/aldanedev-create/minifyjs"
+Documentation = ""https://github.com/aldanedev-create/minifyjs/tree/main/docs"
+Repository = ""https://github.com/aldanedev-create/minifyjs"
+Issues = ""https://github.com/aldanedev-create/minifyjs"
 
 [project.scripts]
 minifyjs = "minifyjs.cli:main"

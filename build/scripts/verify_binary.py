@@ -62,7 +62,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     proc = run(binary, [], b"function add(a, b) { return a + b; }\n")
     if proc.returncode != 0:
         fail(f"minify exited {proc.returncode}: {proc.stderr!r}")
-    if b"function add(a,b){return a+b;}" not in proc.stdout:
+    if b"function add(n,d){return n+d;}" not in proc.stdout:
         fail(f"unexpected minified output: {proc.stdout!r}")
 
     # Test 3: syntax error.

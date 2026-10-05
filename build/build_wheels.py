@@ -57,7 +57,7 @@ def wheel_filename(version: str, wheel_tag: str) -> str:
 
 
 def wheel_metadata(version: str) -> str:
-    readme = (REPO_ROOT / "python" / "README.md").read_text(encoding="utf-8")
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
     return (
         f"Metadata-Version: 2.1\n"
         f"Name: {DIST_NAME}\n"
@@ -113,6 +113,10 @@ def build_wheel(
         rel = src.relative_to(PYTHON_PKG.parent)
         arcname = str(rel).replace(os.sep, "/")
         entries.append((arcname, src.read_bytes()))
+
+    # Keep the repository README alongside the wheel metadata so the
+    # release artifact carries the same project documentation shown on GitHub.
+    entries.append(("README.md", (REPO_ROOT / "README.md").read_bytes()))
 
     # The compiled binary.
     bin_arcname = f"minifyjs/bin/{platform['binary_name']}"

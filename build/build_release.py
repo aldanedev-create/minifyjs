@@ -27,6 +27,7 @@ itself; every step delegates to a script in this directory.
 from __future__ import annotations
 
 import argparse
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -96,6 +97,7 @@ def _is_host_platform(wheel_tag: str) -> bool:
 
 def step_build_wheels(version: str) -> None:
     print("==> step 5: build wheels")
+    shutil.rmtree(WHEELHOUSE, ignore_errors=True)
     run([
         sys.executable, str(BUILD_DIR / "build_wheels.py"),
         "--all", "--version", version,
@@ -115,7 +117,7 @@ def step_verify_wheels() -> None:
             print(f"    {wheel.name} (skipped: not host platform)")
 
 
-def step_checksums() -> None:
+def step_checksums(version: str) -> None:
     print("==> step 7: checksums and manifest")
     run([
         sys.executable, str(BUILD_DIR / "generate_checksums.py"),
@@ -126,15 +128,17 @@ def step_checksums() -> None:
         sys.executable, str(BUILD_DIR / "generate_manifest.py"),
         "--dir", str(WHEELHOUSE),
         "--out", str(WHEELHOUSE / "manifest.json"),
+        "--version", version,
     ])
 
 
 def step_publish() -> None:
     print("==> step 8: publish to PyPI")
+    wheels = sorted(WHEELHOUSE.glob("*.whl"))
     run([
         sys.executable, "-m", "twine", "upload",
         "--skip-existing",
-        str(WHEELHOUSE / "*.whl"),
+        *(str(wheel) for wheel in wheels),
     ])
 
 
@@ -153,7 +157,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     step_verify_binaries()
     step_build_wheels(args.version)
     step_verify_wheels()
-    step_checksums()
+    step_checksums(args.version)
 
     if args.publish:
         step_publish()

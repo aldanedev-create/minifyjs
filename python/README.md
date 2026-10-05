@@ -1,6 +1,6 @@
 # minifyjs
 
-Python bindings for [MinifyJS](https://github.com/minifyjs/minifyjs),
+Python bindings for [MinifyJS](https://github.com/aldanedev-create/minifyjs),
 a native JavaScript minifier and optimizer. No Node.js required.
 
 ## Install
