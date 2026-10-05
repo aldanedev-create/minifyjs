@@ -11,6 +11,8 @@ from __future__ import annotations
 import contextlib
 import json
 import subprocess
+import tempfile
+from dataclasses import replace
 from pathlib import Path
 
 from ._binary import find_binary
@@ -71,35 +73,30 @@ def run_bundle(opts: BundleOptions) -> Result:
     to stream a multi-file bundle through stdout). The returned
     Result carries diagnostics and, when outfile was used, the code.
     """
-    binary = find_binary()
-    args = [binary, *build_bundle_args(opts)]
-
-    proc = subprocess.run(
-        args,
-        capture_output=True,
-        check=False,
-    )
-
-    diagnostics = _parse_diagnostics(proc.stderr.decode("utf-8", "replace"))
-
-    if proc.returncode != 0:
-        raise BundleError(
-            _format_error_message(proc.returncode, diagnostics)
-        )
-
-    code = proc.stdout.decode("utf-8")
-    map_text = ""
-    if opts.sourcemap in ("external", "both") and opts.outfile:
-        map_path = Path(opts.outfile + ".map")
-        if map_path.is_file():
-            map_text = map_path.read_text(encoding="utf-8")
-    return Result(
-        code=code,
-        map=map_text,
-        original_bytes=0,
-        minified_bytes=len(code.encode("utf-8")),
-        diagnostics=diagnostics,
-    )
+    working_dir = Path(opts.working_dir or Path.cwd()).resolve()
+    with tempfile.TemporaryDirectory(prefix="minifyjs-metadata-") as temp:
+        metadata_path = Path(opts.metafile) if opts.metafile else Path(temp) / "meta.json"
+        if not metadata_path.is_absolute():
+            metadata_path = working_dir / metadata_path
+        effective = replace(opts, working_dir=str(working_dir), metafile=str(metadata_path))
+        proc = subprocess.run([find_binary(), *build_bundle_args(effective)], capture_output=True, check=False)
+        diagnostics = _parse_diagnostics(proc.stderr.decode("utf-8", "replace"))
+        if proc.returncode != 0:
+            raise BundleError(_format_error_message(proc.returncode, diagnostics))
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        outputs = [{"path": str((working_dir / path).resolve()), "bytes": info["bytes"]}
+                   for path, info in metadata.get("outputs", {}).items()]
+        code = ""
+        map_text = ""
+        if opts.outfile:
+            output = (working_dir / opts.outfile).resolve()
+            code = output.read_text(encoding="utf-8")
+            map_path = Path(str(output) + ".map")
+            if opts.sourcemap in ("external", "both") and map_path.is_file():
+                map_text = map_path.read_text(encoding="utf-8")
+        return Result(code=code, map=map_text, original_bytes=0,
+                      minified_bytes=sum(f["bytes"] for f in outputs),
+                      diagnostics=diagnostics, output_files=outputs, metafile=metadata)
 
 
 def _parse_diagnostics(stderr: str) -> list[Diagnostic]:

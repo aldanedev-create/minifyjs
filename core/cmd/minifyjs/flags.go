@@ -50,10 +50,13 @@ type flags struct {
 	splitting   bool
 	splitSet    bool
 
+	bundleValues map[string]string
+	externals    []string
+
 	// Cache
-	cache    bool
-	cacheSet bool
-	cacheDir string
+	cache       bool
+	cacheSet    bool
+	cacheDir    string
 	cacheDirSet bool
 
 	// Config
@@ -75,13 +78,13 @@ type flags struct {
 	showVersion bool
 
 	// Define / drop / pure (esbuild passthroughs)
-	defines   map[string]string
-	drops     []string
-	pures     []string
+	defines map[string]string
+	drops   []string
+	pures   []string
 }
 
 // newFlags returns an empty flags value. Defines is pre-allocated so
 // the parser can write to it without checking nil.
 func newFlags() *flags {
-	return &flags{defines: map[string]string{}}
+	return &flags{defines: map[string]string{}, bundleValues: map[string]string{}}
 }

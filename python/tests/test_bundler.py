@@ -186,3 +186,57 @@ def test_bundle_sourcemap_external(tmp_path):
         sourcemap="external",
     )
     assert not r.has_errors
+
+
+def test_bundle_honors_mangle(tmp_path):
+    entry = tmp_path / "main.js"
+    entry.write_text("export function calculate(longParameterName) { const longLocalName = longParameterName + 1; return longLocalName * longParameterName; }")
+    plain = bundle([str(entry)], outfile=str(tmp_path / "plain.js"), mangle=False)
+    small = bundle([str(entry)], outfile=str(tmp_path / "small.js"), mangle=True)
+    assert "longParameterName" in plain.code
+    assert "longParameterName" not in small.code
+    assert small.minified_bytes < plain.minified_bytes
+
+
+def test_bundle_working_dir_metadata_and_hashes(tmp_path):
+    (tmp_path / "main.js").write_text('export const load = () => import("./lazy.js");')
+    (tmp_path / "lazy.js").write_text('export const value = 42;')
+    result = bundle(["main.js"], working_dir=str(tmp_path), outdir="dist",
+                    splitting=True, entry_names="[name]-[hash]",
+                    chunk_names="chunks/[name]-[hash]", metafile="reports/meta.json")
+    assert (tmp_path / "reports/meta.json").is_file()
+    assert len(result.output_files) == 2
+    assert any("chunks" in item["path"] for item in result.output_files)
+    assert result.minified_bytes == sum(item["bytes"] for item in result.output_files)
+    for item in result.output_files:
+        from pathlib import Path
+        assert Path(item["path"]).stat().st_size == item["bytes"]
+    assert result.metafile["inputs"]
+
+
+def test_bundle_tree_shaking_reexports(tmp_path):
+    (tmp_path / "lib.js").write_text('export const unusedMarker = "UNUSED_SENTINEL"; export const used = 1;')
+    (tmp_path / "barrel.js").write_text('export * from "./lib.js";')
+    (tmp_path / "main.js").write_text('import {used} from "./barrel.js"; console.log(used);')
+    result = bundle(["main.js"], working_dir=str(tmp_path), outfile="bundle.js")
+    assert "UNUSED_SENTINEL" not in result.code
+
+
+def test_bundle_packages_and_explicit_external(tmp_path):
+    package = tmp_path / "node_modules" / "example-dep"
+    package.mkdir(parents=True)
+    (package / "package.json").write_text('{"main":"index.js"}')
+    (package / "index.js").write_text('export const value = 42;')
+    (tmp_path / "main.js").write_text('import {value} from "example-dep"; console.log(value);')
+    included = bundle(["main.js"], working_dir=str(tmp_path), outfile="included.js")
+    excluded = bundle(["main.js"], working_dir=str(tmp_path), outfile="excluded.js", external=["example-dep"])
+    assert "example-dep" not in included.code
+    assert "example-dep" in excluded.code
+
+
+def test_bundle_define_and_drop(tmp_path):
+    (tmp_path / "main.js").write_text('if (DEBUG) console.log("DEBUG_SENTINEL"); debugger; export const value = 42;')
+    result = bundle(["main.js"], working_dir=str(tmp_path), outfile="bundle.js",
+                    define={"DEBUG":"false"}, drop=["debugger"])
+    assert "DEBUG_SENTINEL" not in result.code
+    assert "debugger" not in result.code

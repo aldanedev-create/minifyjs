@@ -184,6 +184,18 @@ func parseFlags(args []string) (*flags, error) {
 			}
 			f.platform = v
 			f.platformSet = true
+		case "--entry-names", "--chunk-names", "--asset-names", "--metafile", "--packages", "--tree-shaking", "--charset", "--working-dir":
+			v, err := consumeValue()
+			if err != nil {
+				return nil, err
+			}
+			f.bundleValues[name] = v
+		case "--external":
+			v, err := consumeValue()
+			if err != nil {
+				return nil, err
+			}
+			f.externals = append(f.externals, v)
 		case "--splitting":
 			f.splitting = true
 			f.splitSet = true

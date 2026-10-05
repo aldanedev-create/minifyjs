@@ -49,14 +49,14 @@ func TestBundleESMKeepsExternalImports(t *testing.T) {
 	out := filepath.Join(dir, "bundle.js")
 
 	r := helpers.Run(t, helpers.RunOptions{
-		Args: []string{"--bundle", "--format", "esm", "--outfile", out, entry},
+		Args: []string{"--bundle", "--format", "esm", "--packages", "external", "--outfile", out, entry},
 	})
 	helpers.AssertExitCode(t, r, 0)
 
 	body, _ := os.ReadFile(out)
 	// "external" module is not on disk, so it stays as an import.
 	if !strings.Contains(string(body), "external") {
-		t.Logf("bundle output: %s", body)
+		t.Fatalf("external package was not preserved: %s", body)
 	}
 }
 

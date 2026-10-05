@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strings"
 
 	"github.com/evanw/esbuild/pkg/api"
 )
@@ -24,6 +22,14 @@ import (
 type BuildOptions struct {
 	// EntryPoints are the files to bundle. At least one is required.
 	EntryPoints []string
+	EntryNames  string
+	ChunkNames  string
+	AssetNames  string
+	Metafile    string
+	External    []string
+	Packages    string
+	TreeShaking string
+	Charset     string
 
 	// OutDir is the directory to write output files into. Either
 	// OutDir or OutFile must be set.
@@ -93,6 +99,11 @@ func Build(opts BuildOptions) (Result, error) {
 		Bundle:        opts.Bundle,
 		Splitting:     opts.Splitting,
 		Write:         true,
+		EntryNames:    opts.EntryNames,
+		ChunkNames:    opts.ChunkNames,
+		AssetNames:    opts.AssetNames,
+		External:      opts.External,
+		Metafile:      opts.Metafile != "",
 		Charset:       api.CharsetUTF8,
 
 		MinifyWhitespace:  opts.MinifyWhitespace,
@@ -103,14 +114,28 @@ func Build(opts BuildOptions) (Result, error) {
 
 		LogLevel: api.LogLevelSilent, // we surface diagnostics ourselves
 	}
-	if options.Format == "esm" {
+	switch opts.Packages {
+	case "", "bundle":
+	case "external":
 		bOpts.Packages = api.PackagesExternal
+	default:
+		return Result{}, fmt.Errorf("invalid packages mode: %s", opts.Packages)
 	}
-	if hasReExport(opts.EntryPoints) {
+	switch opts.TreeShaking {
+	case "", "default":
+	case "true":
+		bOpts.TreeShaking = api.TreeShakingTrue
+	case "false":
 		bOpts.TreeShaking = api.TreeShakingFalse
+	default:
+		return Result{}, fmt.Errorf("invalid tree-shaking mode: %s", opts.TreeShaking)
 	}
-	if !opts.Splitting {
-		bOpts.External = dynamicImportPaths(opts.EntryPoints)
+	switch opts.Charset {
+	case "", "utf8":
+	case "ascii":
+		bOpts.Charset = api.CharsetASCII
+	default:
+		return Result{}, fmt.Errorf("invalid charset: %s", opts.Charset)
 	}
 	for _, kind := range opts.Drop {
 		switch kind {
@@ -147,7 +172,22 @@ func Build(opts BuildOptions) (Result, error) {
 		bOpts.Footer = map[string]string{"js": opts.Footer}
 	}
 
+	if options.LegalComments != "" {
+		bOpts.LegalComments = mapLegalComments(options.LegalComments)
+	}
 	res := api.Build(bOpts)
+	if len(res.Errors) == 0 && opts.Metafile != "" {
+		path := opts.Metafile
+		if !filepath.IsAbs(path) {
+			path = filepath.Join(opts.AbsWorkingDir, path)
+		}
+		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+			return Result{}, err
+		}
+		if err := os.WriteFile(path, []byte(res.Metafile), 0644); err != nil {
+			return Result{}, err
+		}
+	}
 
 	out := Result{
 		Diagnostics: convertMessages(res.Errors, res.Warnings),
@@ -165,55 +205,4 @@ func Build(opts BuildOptions) (Result, error) {
 		}
 	}
 	return out, nil
-}
-
-func dynamicImportPaths(entries []string) []string {
-	pattern := regexp.MustCompile(`\bimport\s*\(\s*["']([^"']+)["']\s*\)`)
-	seen := make(map[string]bool)
-	var paths []string
-	for _, entry := range entries {
-		data, err := os.ReadFile(entry)
-		if err != nil {
-			continue
-		}
-		for _, match := range pattern.FindAllStringSubmatch(string(data), -1) {
-			if strings.HasPrefix(match[1], ".") {
-				target := filepath.Clean(filepath.Join(filepath.Dir(entry), match[1]))
-				if _, err := os.Stat(target); err != nil {
-					continue
-				}
-			}
-			if !seen[match[1]] {
-				seen[match[1]] = true
-				paths = append(paths, match[1])
-			}
-		}
-	}
-	return paths
-}
-
-func hasReExport(entries []string) bool {
-	pattern := regexp.MustCompile(`\bexport\s+(?:\*|\{[^}]+\})\s+from\s*["']`)
-	seen := make(map[string]bool)
-	for _, entry := range entries {
-		root := filepath.Dir(entry)
-		_ = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-			if err != nil || info.IsDir() || seen[path] {
-				return nil
-			}
-			seen[path] = true
-			if filepath.Ext(path) != ".js" {
-				return nil
-			}
-			data, readErr := os.ReadFile(path)
-			if readErr == nil && pattern.Match(data) {
-				seen["__found__"] = true
-			}
-			return nil
-		})
-		if seen["__found__"] {
-			return true
-		}
-	}
-	return false
 }

@@ -26,6 +26,9 @@ class Result:
     #: Any diagnostics produced by the engine.
     diagnostics: list[Diagnostic] = field(default_factory=list)
 
+    output_files: list[dict] = field(default_factory=list)
+    metafile: dict = field(default_factory=dict)
+
     @property
     def ratio(self) -> float:
         """Compression ratio as minified/original (0..1); 0 if empty."""

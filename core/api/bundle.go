@@ -4,7 +4,16 @@ import "github.com/minifyjs/minifyjs/core/internal/engine"
 
 // BundleOptions mirrors engine.BuildOptions.
 type BundleOptions struct {
-	EntryPoints   []string
+	EntryPoints []string
+	EntryNames  string
+	ChunkNames  string
+	AssetNames  string
+	Metafile    string
+	External    []string
+	Packages    string
+	TreeShaking string
+	Charset     string
+
 	OutDir        string
 	OutFile       string
 	AbsWorkingDir string
@@ -19,6 +28,14 @@ type BundleOptions struct {
 // output code.
 func Bundle(opts BundleOptions) (Result, error) {
 	r, err := engine.Build(engine.BuildOptions{
+		EntryNames:    opts.EntryNames,
+		ChunkNames:    opts.ChunkNames,
+		AssetNames:    opts.AssetNames,
+		Metafile:      opts.Metafile,
+		External:      opts.External,
+		Packages:      opts.Packages,
+		TreeShaking:   opts.TreeShaking,
+		Charset:       opts.Charset,
 		EntryPoints:   opts.EntryPoints,
 		OutDir:        opts.OutDir,
 		OutFile:       opts.OutFile,

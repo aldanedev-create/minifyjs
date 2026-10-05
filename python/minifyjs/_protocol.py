@@ -44,7 +44,19 @@ def build_args(opts: Options) -> list[str]:
 
 def build_bundle_args(opts: BundleOptions) -> list[str]:
     """Build the CLI argument list for a bundle call."""
-    args: list[str] = ["--bundle"]
+    args: list[str] = ["--bundle", "--no-config"]
+    for name in ("entry_names", "chunk_names", "asset_names", "metafile", "packages", "charset", "working_dir"):
+        value = getattr(opts, name)
+        if value is not None:
+            args.extend(["--" + name.replace("_", "-"), str(value)])
+    if opts.tree_shaking is not None:
+        args.extend(["--tree-shaking", str(opts.tree_shaking).lower()])
+    for value in opts.external or []:
+        args.extend(["--external", value])
+    for key, value in (opts.define or {}).items():
+        args.extend(["--define", f"{key}={value}"])
+    for value in opts.drop or []:
+        args.extend(["--drop", value])
     args.extend(build_args(opts))
     if opts.sourcemap == "external":
         args[args.index("--sourcemap=inline")] = "--sourcemap=external"

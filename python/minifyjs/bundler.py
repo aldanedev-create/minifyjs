@@ -29,6 +29,17 @@ def bundle(
     banner: str | None = None,
     footer: str | None = None,
     legal_comments: str | None = None,
+    entry_names: str | None = None,
+    chunk_names: str | None = None,
+    asset_names: str | None = None,
+    metafile: str | None = None,
+    external: list[str] | None = None,
+    packages: str = "bundle",
+    tree_shaking: bool | None = None,
+    charset: str = "utf8",
+    define: dict[str, str] | None = None,
+    drop: list[str] | None = None,
+
 ) -> Result:
     """Bundle and minify a multi-file JavaScript project.
 
@@ -63,5 +74,16 @@ def bundle(
         banner=banner,
         footer=footer,
         legal_comments=legal_comments,
+        entry_names=entry_names,
+        chunk_names=chunk_names,
+        asset_names=asset_names,
+        metafile=metafile,
+        external=external,
+        packages=packages,
+        tree_shaking=tree_shaking,
+        charset=charset,
+        define=define,
+        drop=drop,
+
     )
     return run_bundle(opts)

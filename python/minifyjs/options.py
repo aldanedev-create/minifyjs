@@ -71,3 +71,13 @@ class BundleOptions(Options):
 
     #: Enable code splitting. Requires format="esm".
     splitting: bool = False
+    entry_names: str | None = None
+    chunk_names: str | None = None
+    asset_names: str | None = None
+    metafile: str | None = None
+    external: list[str] | None = None
+    packages: str = "bundle"
+    tree_shaking: bool | None = None
+    charset: str = "utf8"
+    define: dict[str, str] | None = None
+    drop: list[str] | None = None

@@ -241,6 +241,29 @@ func applyFlags(cfg *config.Config, f *flags) {
 	if f.bundleSet {
 		cfg.Bundle = f.bundle
 	}
+	for key, value := range f.bundleValues {
+		switch key {
+		case "--entry-names":
+			cfg.BundleOptions.EntryNames = value
+		case "--chunk-names":
+			cfg.BundleOptions.ChunkNames = value
+		case "--asset-names":
+			cfg.BundleOptions.AssetNames = value
+		case "--metafile":
+			cfg.BundleOptions.Metafile = value
+		case "--packages":
+			cfg.BundleOptions.Packages = value
+		case "--tree-shaking":
+			cfg.BundleOptions.TreeShaking = value
+		case "--charset":
+			cfg.BundleOptions.Charset = value
+		case "--working-dir":
+			cfg.BundleOptions.WorkingDir = value
+		}
+	}
+	if len(f.externals) > 0 {
+		cfg.BundleOptions.External = f.externals
+	}
 	if f.outdirSet {
 		cfg.BundleOptions.EntryPoints = f.inputs
 		cfg.Output = f.outdir
@@ -274,7 +297,7 @@ func runTransform(cfg config.Config, stdin io.Reader, stdout, stderr io.Writer) 
 	}
 
 	var (
-		source    []byte
+		source     []byte
 		sourceName string
 	)
 	switch {
@@ -427,15 +450,32 @@ func runBundle(cfg config.Config, stderr io.Writer) int {
 		platform = "browser"
 	}
 
+	workingDir := cfg.BundleOptions.WorkingDir
+	if workingDir == "" {
+		workingDir = mustGetwd()
+	}
+	workingDir, err := filepath.Abs(workingDir)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return exitUsage
+	}
 	bopts := api.BundleOptions{
+		EntryNames:    cfg.BundleOptions.EntryNames,
+		ChunkNames:    cfg.BundleOptions.ChunkNames,
+		AssetNames:    cfg.BundleOptions.AssetNames,
+		Metafile:      cfg.BundleOptions.Metafile,
+		External:      cfg.BundleOptions.External,
+		Packages:      cfg.BundleOptions.Packages,
+		TreeShaking:   cfg.BundleOptions.TreeShaking,
+		Charset:       cfg.BundleOptions.Charset,
 		EntryPoints:   entries,
 		Bundle:        true,
 		Platform:      platform,
 		Splitting:     cfg.BundleOptions.Splitting,
-		AbsWorkingDir: mustGetwd(),
+		AbsWorkingDir: workingDir,
 		Options: api.Options{
 			MinifyWhitespace:  cfg.Minify.Whitespace,
-			MinifyIdentifiers: false,
+			MinifyIdentifiers: cfg.Minify.Identifiers,
 			MinifySyntax:      cfg.Minify.Syntax,
 			Target:            cfg.Target,
 			Format:            cfg.Format,
@@ -583,6 +623,15 @@ Bundling:
   --outdir DIR          Output directory for bundled files.
   --platform P          Target platform: browser, node, neutral.
   --splitting           Enable code splitting (requires --format esm).
+  --working-dir DIR     Resolve bundle paths from this directory.
+  --entry-names PATTERN Entry filename pattern.
+  --chunk-names PATTERN Chunk filename pattern.
+  --asset-names PATTERN Asset filename pattern.
+  --metafile PATH       Write build metadata JSON.
+  --external PATTERN    Preserve matching imports (repeatable).
+  --packages MODE       bundle (default) or external.
+  --tree-shaking MODE   default, true, or false.
+  --charset MODE        utf8 (default) or ascii.
 
 Caching:
   --cache               Enable on-disk result cache.
