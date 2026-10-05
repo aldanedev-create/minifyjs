@@ -40,7 +40,10 @@ step does and how to verify it.
 ```
 
 The wheel workflow also builds and installs each platform wheel on a matching
-Linux, macOS, or Windows runner. Wait for all five matrix jobs to pass before
+Linux, macOS, or Windows runner. musllinux wheels are installed and exercised
+in Alpine containers for x86-64 and ARM64. Host selection reads pip compatibility
+tags so musl environments verify musllinux wheels and glibc environments verify
+manylinux wheels. Wait for all platform jobs to pass before
 publishing. Cross-compiling alone does not verify that a foreign-platform binary
 runs. This CI tests modern operating systems; it does not establish compatibility
 with every older OS implied by a wheel tag.

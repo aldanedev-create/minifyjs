@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reexports no longer disable tree shaking.
 
 ### Added
+- musllinux 1.2 wheels for Linux x86-64 and ARM64, verified in Alpine containers.
+- Host release verification selects wheels using pip compatibility tags.
 - Explicit bundle controls for external dependencies, packages, tree shaking,
   entry/chunk/asset names, charset, metafiles, define, and drop.
 - Python bundle results include emitted file paths, byte counts, and metadata.
