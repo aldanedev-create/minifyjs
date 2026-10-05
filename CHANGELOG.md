@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python bundle results include emitted file paths, byte counts, and metadata.
 - Release wheel verification installs into a clean environment and exercises
   the CLI, Python API, splitting, source maps, and dependency resolution.
-- CI verifies wheels on Linux x86-64/ARM64, macOS Intel/ARM64, and Windows x86-64.
+- Removed empty workflow placeholders that failed without running any checks.
+- CI runs the Go/Python suites and verifies wheels on Linux x86-64/ARM64, macOS Intel/ARM64, and Windows x86-64.
 
 ### Migration
 - Dependencies are bundled by default. Use `packages="external"` or `external`
