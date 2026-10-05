@@ -9,7 +9,8 @@ site generator.
 - **New to MinifyJS?** Start with [getting-started/quickstart.md](getting-started/quickstart.md).
 - **Installing?** See [getting-started/installation.md](getting-started/installation.md).
 - **Using the CLI?** See [cli/overview.md](cli/overview.md).
-- **Using the Python API?** See [python/api.md](python/api.md).
+- **Using the Python API?** See [python/api.md](python/api.md) and
+  [python/troubleshooting.md](python/troubleshooting.md).
 - **Curious how it works?** See [architecture.md](architecture.md).
 - **Contributing?** See [development/setup.md](development/setup.md).
 

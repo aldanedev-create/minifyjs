@@ -42,6 +42,20 @@ def test_bundle_simple_esm(tmp_path):
     assert not r.has_errors
 
 
+def test_bundle_external_sourcemap_is_returned_and_written(tmp_path):
+    (tmp_path / "main.js").write_text("export const v = 1;\n")
+    out = tmp_path / "bundle.js"
+    r = bundle(
+        [str(tmp_path / "main.js")],
+        outfile=str(out),
+        format="esm",
+        sourcemap="external",
+    )
+    assert not r.has_errors
+    assert r.map
+    assert (tmp_path / "bundle.js.map").is_file()
+
+
 def test_bundle_missing_entry_raises(tmp_path):
     with pytest.raises(BundleError):
         bundle(
