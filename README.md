@@ -4,7 +4,7 @@
 
  
  <p align="center">
-  <img src="https://raw.githubusercontent.com/aldanedev-create/Flaxon-Backend-Framework/main/assets/flaxon.png" alt="flaxon Logo"
+  <img src="https://raw.githubusercontent.com/aldanedev-create/minifyjs/main/assets/Minifyjs-log.png" alt="minifyjs Logo"
    width="200"/>
 </p>
 
