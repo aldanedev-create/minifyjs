@@ -1,0 +1,33 @@
+{
+  "$schema": "../docs/reference/config-schema.json",
+  "_comment": "Default MinifyJS configuration. Every value here matches the built-in defaults, so checking this file into a project does not change behavior. Copy it and edit the values you want to override.",
+
+  "minify": {
+    "whitespace": true,
+    "identifiers": true,
+    "syntax": true
+  },
+
+  "target": "esnext",
+  "format": "",
+  "sourcemap": "",
+
+  "banner": "",
+  "footer": "",
+  "legalComments": "eof",
+
+  "bundle": {
+    "enabled": false,
+    "entryPoints": [],
+    "platform": "browser",
+    "splitting": false
+  },
+
+  "cache": {
+    "enabled": false,
+    "dir": ""
+  },
+
+  "quiet": false,
+  "verbose": false
+}

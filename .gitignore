@@ -1,0 +1,56 @@
+# Go
+/bin/
+core/bin/
+*.exe
+*.test
+*.out
+vendor/
+
+# Go workspace metadata that is machine-local
+go.work.sum
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/dist/
+build/wheelhouse/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+pip-wheel-metadata/
+
+# Bundled native binary (populated by release pipeline, never checked in)
+python/minifyjs/bin/minifyjs
+python/minifyjs/bin/minifyjs.exe
+
+# Node (only used by benchmark scripts and examples, never by the engine)
+node_modules/
+package-lock.json
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Local benchmark output
+bench/results/history/
+bench/results/charts/*.svg
+
+# Local docs build output
+docs/_build/
+
+# Coverage
+coverage.out
+coverage.xml
+htmlcov/
+.coverage
+.coverage.*

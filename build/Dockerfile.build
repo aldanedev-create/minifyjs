@@ -1,0 +1,38 @@
+# Build image used by CI to produce Linux binaries and wheels.
+# Multi-stage: the first stage has the toolchains, the second has
+# only the artifacts.
+#
+# Build:
+#   docker build -f build/Dockerfile.build -t minifyjs-build .
+#
+# Run:
+#   docker run --rm -v "$PWD:/src" minifyjs-build python build_core.py --all --out /src/build/dist
+
+FROM golang:1.23-bookworm AS go
+
+WORKDIR /src
+
+# Cache go module downloads by copying go.mod first.
+COPY core/go.mod core/go.sum ./core/
+RUN cd core && go mod download
+
+COPY core ./core
+COPY tools ./tools
+
+
+FROM python:3.11-bookworm AS build
+
+# Copy the Go toolchain from the go stage so build_core.py can find it.
+COPY --from=go /usr/local/go /usr/local/go
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+WORKDIR /src
+
+# Python build dependencies.
+RUN pip install --no-cache-dir build wheel twine
+
+# Copy the entire repo.
+COPY . .
+
+# Default command: build every platform.
+CMD ["python", "build/build_core.py", "--all", "--out", "build/dist"]

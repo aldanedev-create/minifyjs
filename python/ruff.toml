@@ -1,0 +1,19 @@
+target-version = "py38"
+line-length = 100
+
+[lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "N",        # pep8-naming
+    "UP",       # pyupgrade
+    "B",        # flake8-bugbear
+    "C4",       # comprehensions
+    "SIM",      # simplify
+    "RUF",      # ruff-specific
+]
+ignore = ["E501"]  # line length handled by formatter
+
+[lint.per-file-ignores]
+"tests/*" = ["S101"]  # assert allowed in tests

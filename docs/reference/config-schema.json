@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://minifyjs.example/schemas/config.json",
+  "title": "MinifyJS configuration",
+  "description": "Configuration file for MinifyJS. See docs/reference/configuration.md for a detailed reference.",
+
+  "type": "object",
+  "additionalProperties": false,
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional URL of this schema, for editor autocompletion."
+    },
+
+    "inputs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Input files. Empty means read from stdin."
+    },
+
+    "output": {
+      "type": "string",
+      "description": "Output path. Empty means write to stdout."
+    },
+
+    "minify": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Minification passes to enable.",
+      "properties": {
+        "whitespace": {
+          "type": "boolean",
+          "default": true,
+          "description": "Remove unnecessary whitespace."
+        },
+        "identifiers": {
+          "type": "boolean",
+          "default": true,
+          "description": "Rename local identifiers to short names."
+        },
+        "syntax": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable constant folding, dead-code elimination, and expression simplification."
+        }
+      }
+    },
+
+    "target": {
+      "type": "string",
+      "default": "esnext",
+      "description": "ECMAScript target version. One of es5, es2015..es2024, esnext, or a comma-separated compound like 'es2020,chrome90'."
+    },
+
+    "format": {
+      "type": "string",
+      "enum": ["", "iife", "cjs", "esm"],
+      "default": "",
+      "description": "Module format for the output. Empty means preserve."
+    },
+
+    "sourcemap": {
+      "type": "string",
+      "enum": ["", "inline", "external", "both"],
+      "default": "",
+      "description": "Source map mode. Empty means no source map."
+    },
+
+    "banner": {
+      "type": "string",
+      "default": "",
+      "description": "Text prepended verbatim to the output."
+    },
+
+    "footer": {
+      "type": "string",
+      "default": "",
+      "description": "Text appended verbatim to the output."
+    },
+
+    "legalComments": {
+      "type": "string",
+      "enum": ["", "none", "inline", "eof", "external"],
+      "default": "eof",
+      "description": "What happens to /*! ... */ comments."
+    },
+
+    "bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Bundling options. Only used when enabled is true.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Switch to bundle mode."
+        },
+        "entryPoints": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Files to bundle."
+        },
+        "platform": {
+          "type": "string",
+          "enum": ["browser", "node", "neutral"],
+          "default": "browser",
+          "description": "Target platform for the bundle."
+        },
+        "splitting": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable code splitting. Requires format='esm'."
+        }
+      }
+    },
+
+    "cache": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "On-disk result cache settings.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable the on-disk cache."
+        },
+        "dir": {
+          "type": "string",
+          "default": "",
+          "description": "Override the cache directory. Empty means the OS default."
+        }
+      }
+    },
+
+    "quiet": {
+      "type": "boolean",
+      "default": false,
+      "description": "Suppress non-error output on stderr."
+    },
+
+    "verbose": {
+      "type": "boolean",
+      "default": false,
+      "description": "Print extra detail on stderr. Mutually exclusive with quiet."
+    }
+  }
+}

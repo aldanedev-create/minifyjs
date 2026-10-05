@@ -1,0 +1,135 @@
+// Development container configuration for MinifyJS.
+//
+// Open the repository in VS Code (or GitHub Codespaces) and the
+// editor prompts to reopen it in a container. Everything the
+// project needs — Go, Python, the linters, the test tools — is
+// already installed.
+//
+// See .devcontainer/README.md for the full guide.
+
+{
+    "name": "MinifyJS",
+
+    // Build the image from the local Dockerfile. The image is
+    // cached, so subsequent opens are fast.
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "..",
+        "args": {
+            "GO_VERSION": "1.23",
+            "PYTHON_VERSION": "3.11"
+        }
+    },
+
+    // Features are small installable tools that layer on top of
+    // the base image without requiring a rebuild of the whole
+    // Dockerfile.
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "20"
+        },
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": true,
+            "configureZshAsDefaultShell": true,
+            "installOhMyZsh": false,
+            "username": "vscode"
+        }
+    },
+
+    // Mounts and environment variables for the workspace.
+    "containerEnv": {
+        "MINIFYJS_DEV": "1",
+        "GOTOOLCHAIN": "local"
+    },
+
+    // The workspace should be mounted at /workspaces/minifyjs.
+    // The default for devcontainers is /workspaces/<repo-name>.
+    "workspaceFolder": "/workspaces/minifyjs",
+
+    // Run this after the container starts. Installs Python and
+    // Node dependencies from the repository's own manifests so
+    // that the versions match what CI uses.
+    "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+    // Map ports used by the framework examples. The examples run
+    // on these ports when launched from inside the container.
+    "forwardPorts": [5000, 8000],
+    "portsAttributes": {
+        "5000": {
+            "label": "Flask example",
+            "onAutoForward": "notify"
+        },
+        "8000": {
+            "label": "FastAPI example",
+            "onAutoForward": "notify"
+        }
+    },
+
+    // VS Code extensions installed automatically. These cover Go
+    // and Python editing plus the standard devcontainer tooling.
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "golang.go",
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "charliermarsh.ruff",
+                "editorconfig.editorconfig",
+                "redhat.vscode-yaml",
+                "streetsidesoftware.code-spell-checker",
+                "bierner.markdown-preview-github-styles",
+                "eamodio.gitlens"
+            ],
+            "settings": {
+                // Go
+                "go.useLanguageServer": true,
+                "go.toolsManagement.autoUpdate": true,
+                "go.testFlags": ["-v"],
+                "go.lintTool": "golangci-lint",
+                "go.lintFlags": ["--fast"],
+
+                // Python
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.testing.pytestEnabled": true,
+                "python.testing.pytestArgs": ["python/tests"],
+                "python.linting.enabled": false,
+                "python.formatting.provider": "none",
+                "[python]": {
+                    "editor.defaultFormatter": "charliermarsh.ruff",
+                    "editor.formatOnSave": true,
+                    "editor.codeActionsOnSave": {
+                        "source.organizeImports.ruff": "explicit"
+                    }
+                },
+
+                // Editor defaults that match the repository's
+                // .editorconfig.
+                "editor.formatOnSave": true,
+                "editor.insertSpaces": true,
+                "editor.tabSize": 4,
+                "files.eol": "\n",
+                "files.insertFinalNewline": true,
+                "files.trimTrailingWhitespace": true,
+
+                // Do not format generated files.
+                "files.readonlyInclude": {
+                    "docs/cli/reference.md": true,
+                    "docs/supported-syntax.md": true
+                }
+            }
+        }
+    },
+
+    // Run the container as the non-root vscode user. Go and Python
+    // are installed system-wide and are accessible to this user.
+    "remoteUser": "vscode",
+
+    // The container should be able to write to the workspace.
+    "updateRemoteUserUID": true,
+
+    // Wait for the Docker daemon to be available. This matters for
+    // container-in-container workflows, which the repository does
+    // not currently use, but the setting is harmless.
+    "initializeCommand": "docker --version || echo 'Docker is not installed on the host'"
+}

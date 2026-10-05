@@ -1,0 +1,29 @@
+{
+  "name": "minifyjs-bench",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Benchmark comparison tools for MinifyJS. This package.json exists only to install the JavaScript-based minifiers (esbuild, terser, uglify-js) into bench/node_modules/ so the benchmark suite can find them without requiring a global npm install.",
+  "license": "MIT",
+  "scripts": {
+    "install-tools": "npm install",
+    "postinstall": "node -e \"console.log('Installed:', ['esbuild','terser','uglify-js'].filter(t => { try { require.resolve(t + '/package.json'); return true; } catch { return false; } }).join(', ') || 'none')\"",
+    "bench": "python run_all.py",
+    "bench:compression": "python measure_compression.py",
+    "bench:throughput": "python measure_throughput.py",
+    "bench:startup": "python measure_startup.py",
+    "bench:memory": "python measure_memory.py"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "terser": "^5.31.0",
+    "uglify-js": "^3.17.4"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "keywords": [
+    "benchmark",
+    "minifier",
+    "javascript"
+  ]
+}

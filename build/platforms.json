@@ -1,0 +1,46 @@
+{
+  "_comment": "Source of truth for which platforms MinifyJS ships. Each entry maps a wheel tag (used in the Python distribution filename) to the Go build parameters that produce its binary. Adding an entry here is not enough; see README.md for the full checklist.",
+
+  "platforms": [
+    {
+      "wheel_tag": "manylinux2014_x86_64",
+      "human": "Linux x86-64",
+      "goos": "linux",
+      "goarch": "amd64",
+      "binary_name": "minifyjs",
+      "github_runner": "ubuntu-22.04"
+    },
+    {
+      "wheel_tag": "manylinux2014_aarch64",
+      "human": "Linux ARM64",
+      "goos": "linux",
+      "goarch": "arm64",
+      "binary_name": "minifyjs",
+      "github_runner": "ubuntu-22.04-arm"
+    },
+    {
+      "wheel_tag": "macosx_10_13_x86_64",
+      "human": "macOS x86-64",
+      "goos": "darwin",
+      "goarch": "amd64",
+      "binary_name": "minifyjs",
+      "github_runner": "macos-13"
+    },
+    {
+      "wheel_tag": "macosx_11_0_arm64",
+      "human": "macOS ARM64",
+      "goos": "darwin",
+      "goarch": "arm64",
+      "binary_name": "minifyjs",
+      "github_runner": "macos-14"
+    },
+    {
+      "wheel_tag": "win_amd64",
+      "human": "Windows x86-64",
+      "goos": "windows",
+      "goarch": "amd64",
+      "binary_name": "minifyjs.exe",
+      "github_runner": "windows-2022"
+    }
+  ]
+}

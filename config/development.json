@@ -1,0 +1,33 @@
+{
+  "$schema": "../docs/reference/config-schema.json",
+  "_comment": "Development preset. Full minification for realistic testing but with inline source maps and verbose output so failures are easy to diagnose.",
+
+  "minify": {
+    "whitespace": true,
+    "identifiers": false,
+    "syntax": true
+  },
+
+  "target": "esnext",
+  "format": "",
+  "sourcemap": "inline",
+
+  "banner": "",
+  "footer": "",
+  "legalComments": "inline",
+
+  "bundle": {
+    "enabled": false,
+    "entryPoints": [],
+    "platform": "browser",
+    "splitting": false
+  },
+
+  "cache": {
+    "enabled": false,
+    "dir": ""
+  },
+
+  "quiet": false,
+  "verbose": true
+}

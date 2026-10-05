@@ -1,0 +1,18 @@
+// go.work ties the two Go modules in this repository together so a
+// single `go build ./...` or `go test ./...` from the repository root
+// builds and tests both the engine (core/) and the developer tools
+// (tools/).
+//
+// This is a Go workspace file, not a Go module. It is checked in so
+// that a fresh clone is immediately buildable without the contributor
+// having to run `go work init` themselves.
+//
+// Do NOT add a module here that is not checked into this repository;
+// go.work is a repository-local convenience, not a dependency
+// manifest. Module versions are pinned in each module's own go.mod.
+go 1.22
+
+use (
+	./core
+	./tools
+)

@@ -1,0 +1,39 @@
+{
+  "_comment": "Target-environment definitions. Each key is a short name that can be passed to `--target`; the value is a list of esbuild target strings that MinifyJS passes through unchanged. This file exists so a project can define 'our-supported-browsers' once and reuse it, instead of spelling out the full list on every command line.",
+
+  "targets": {
+    "browsers": [
+      "chrome90",
+      "firefox88",
+      "safari14",
+      "edge90"
+    ],
+
+    "modern-browsers": [
+      "chrome110",
+      "firefox110",
+      "safari16",
+      "edge110"
+    ],
+
+    "legacy": [
+      "es5"
+    ],
+
+    "esm-only": [
+      "es2015"
+    ],
+
+    "node": [
+      "node18"
+    ],
+
+    "node-lts": [
+      "node20"
+    ],
+
+    "deno": [
+      "deno1"
+    ]
+  }
+}

@@ -1,0 +1,43 @@
+# Normalize line endings in the repository.
+* text=auto eol=lf
+
+# Windows scripts keep CRLF so they run in cmd.exe / PowerShell.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Executables (by extension or name pattern).
+*.sh text eol=lf
+*.py text eol=lf
+
+# Binary artifacts should not have their line endings touched.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.svg text eol=lf
+*.pdf binary
+
+# Go source: always LF, always treated as text.
+*.go text eol=lf
+go.mod text eol=lf
+go.sum text eol=lf
+
+# Markdown: LF, treated as text so GitHub renders diffs well.
+*.md text eol=lf
+
+# YAML: LF.
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Locked generated files: no diff, marked so reviewers know not to
+# hand-edit them.
+core/go.sum          -diff
+python/poetry.lock   -diff
+
+# Linguist overrides so GitHub's language bar reflects reality.
+core/internal/** linguist-language=Go
+tools/**          linguist-language=Go
+bench/**          linguist-detectable=true
+docs/**           linguist-documentation
+examples/**       linguist-documentation

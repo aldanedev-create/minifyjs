@@ -1,0 +1,27 @@
+{
+  "_comment": "Version constraints for the release pipeline. These pin the toolchains the maintainers build against, so a release is reproducible from a tag alone.",
+
+  "go": {
+    "minimum": "1.22",
+    "recommended": "1.23",
+    "esbuild_version": "0.28.2"
+  },
+
+  "python": {
+    "minimum": "3.8",
+    "wheel_build": "3.11",
+    "tested": ["3.8", "3.9", "3.10", "3.11", "3.12","3.13","3.14"]
+  },
+
+  "wheel": {
+    "platform_tag": "manylinux2014",
+    "python_tag": "py3",
+    "abi_tag": "none"
+  },
+
+  "signing": {
+    "method": "sigstore",
+    "enabled": false,
+    "comment": "Enable when the release process is stable enough to add signing."
+  }
+}

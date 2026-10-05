@@ -1,0 +1,33 @@
+{
+  "$schema": "../docs/reference/config-schema.json",
+  "_comment": "Production preset. Aggressive minification, no source maps, no verbose output. This is the config most users want in a deploy pipeline.",
+
+  "minify": {
+    "whitespace": true,
+    "identifiers": true,
+    "syntax": true
+  },
+
+  "target": "es2015",
+  "format": "",
+  "sourcemap": "",
+
+  "banner": "",
+  "footer": "",
+  "legalComments": "eof",
+
+  "bundle": {
+    "enabled": false,
+    "entryPoints": [],
+    "platform": "browser",
+    "splitting": false
+  },
+
+  "cache": {
+    "enabled": true,
+    "dir": ""
+  },
+
+  "quiet": true,
+  "verbose": false
+}
