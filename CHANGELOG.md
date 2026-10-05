@@ -42,6 +42,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   parser, AST, and printer. esbuild now owns those stages.
 
 
+
+## [0.1.2] - 2026-10-05
+
+- fix metadata build and cli entry point user can now used
+minifyjs input.js -o output.min.js instead of python -m minifyjs input.js -o output.min.js
+
+
 ## [0.1.1] - 2026-10-05
 
 - changes to readme.md and docs and version 0.1.1
@@ -55,4 +62,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Empty placeholder release to establish the changelog.
 
-[Unreleased]: https://github.com/minifyjs/minifyjs/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/aldanedev-create/minifyjs/compare/v0.1.0...HEAD

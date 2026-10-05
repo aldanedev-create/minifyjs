@@ -125,6 +125,10 @@ def build_wheel(
     # Metadata.
     entries.append((f"{dist_info}/METADATA", wheel_metadata(version).encode("utf-8")))
     entries.append((f"{dist_info}/WHEEL", wheel_wheel_file(wheel_tag).encode("utf-8")))
+    entries.append((
+    f"{dist_info}/entry_points.txt",
+    b"[console_scripts]\nminifyjs = minifyjs.cli:main\n",
+))
 
     # Build the RECORD file, which lists every other file with its
     # hash and size. RECORD itself has an empty hash and size.
